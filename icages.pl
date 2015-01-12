@@ -36,7 +36,7 @@ sub processArguments {
     $manual and pod2usage (-verbose=>2, -exitval=>1, -output=>\*STDOUT);
     @ARGV == 1 or pod2usage ();
     ################### locations ########################
-    $inputLocation = $1 if $ARGV[0] =~ /(.*)\/$/;
+    $inputLocation = $ARGV[0];
     $icagesLocation = "$0";
     $icagesLocation =~ /(.*)icages\.pl/;
     $icagesLocation = $1;
