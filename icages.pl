@@ -14,9 +14,9 @@ my ($icagesMutation, $icagesGene, $icagesDrug);
 ############################################################# main  ##################################################################
 ######################################################################################################################################
 ($inputLocation, $icagesLocation) =  &processArguments();
-$icagesMutation = "$inputLocation/bin/icagesMutation.pl";
-$icagesGene = "$inputLocation/bin/icagesGene.pl";
-$icagesDrug = "$inputLocation/bin/icagesDrug.pl";
+$icagesMutation = $icagesLocation. "bin/icagesMutation.pl";
+$icagesGene = $icagesLocation . "bin/icagesGene.pl";
+$icagesDrug = $icagesLocation . "bin/icagesDrug.pl";
 
 !system("perl $icagesMutation $inputLocation $icagesLocation") or die "ERROR: cannot call icagesMutation module\n";
 !system("perl $icagesGene $inputLocation $icagesLocation") or die "ERROR: cannot call icagesGene module\n";
@@ -40,6 +40,7 @@ sub processArguments {
     $icagesLocation = "$0";
     $icagesLocation =~ /(.*)icages\.pl/;
     $icagesLocation = $1;
+    $icagesLocation = "./" if $icagesLocation eq "";
     return ($inputLocation, $icagesLocation);
 }
 

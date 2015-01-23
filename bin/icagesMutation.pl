@@ -10,6 +10,7 @@ use Getopt::Long;
 ######################################################################################################################################
 
 my ($annovarInputFile, $rawInputFile, $icagesLocation);
+my $nowString;
 my (%sup, %onc);
 
 ######################################################################################################################################
@@ -18,6 +19,7 @@ my (%sup, %onc);
 
 $rawInputFile = $ARGV[0];
 $icagesLocation = $ARGV[1];
+$nowString = localtime();
 $annovarInputFile = &runAnnovar($rawInputFile, $icagesLocation);
 &processAnnovar($annovarInputFile, $rawInputFile);
 
@@ -28,7 +30,7 @@ $annovarInputFile = &runAnnovar($rawInputFile, $icagesLocation);
 sub runAnnovar {
     print "NOTICE: start runing iCAGES packge at $nowString\n";
     my ($rawInputFile, $annovarInputFile);                                                                      #ANNOVAR input files
-    my ($icagesLocation, $callAnnotateVariation);                                                               #ANNOVAR commands
+    my ($icagesLocation, $callAnnotateVariation, $DBLocation);                                                  #ANNOVAR commands
     my ($radialSVMDB, $radialSVMIndex, $funseq2DB, $funseq2Index, $refGeneDB, $refGeneIndex, $cnvDB);           #ANNOVAR DB files: iCAGES score (index), refGene (fasta), dbSNP
     my ($log, $annovarLog);
     my $nowString = localtime;                                                                                  #SYSTEM local time
@@ -40,7 +42,7 @@ sub runAnnovar {
     &formatConvert($rawInputFile, $annovarInputFile, $icagesLocation);
     &divideMutation($annovarInputFile);
     &loadDatabase($DBLocation);
-    &annotateMutation($DBLocation, $annovarInputFile);
+    &annotateMutation($icagesLocation, $annovarInputFile);
     return $annovarInputFile;
 }
 
@@ -65,7 +67,6 @@ sub processAnnovar{
     my (%radialSVM, %funseq, %cnv, %exon);
     my (%pointcoding);
     my %icagesMutations;
-    
     while(<RADIAL>){
         chomp;
         my @line;
@@ -103,7 +104,7 @@ sub processAnnovar{
         @content = split(":", $syntax[0]);
         $mut = $content[3];
         $pro = $content[4];
-        $key = "$line[3]:$line[4]:$line[5]:$line[6]:$line[7]";
+        $key = "$line[3],$line[4],$line[5],$line[6],$line[7]";
         $exon{$key}{"mutationSyntax"} = $mut;
         $exon{$key}{"proteinSyntax"} = $pro;
         if($line[4] == $line[5]){
@@ -116,14 +117,23 @@ sub processAnnovar{
         my ($key, $gene);                                                            #hash key used for fetch radial SVM score from %radialSVM: mutation->radialSVM
         my ($category, $mutationSyntax, $proteinSyntax, $scoreCategory, $score);
         @line = split(/\t/, $_);
-        $key = "$line[2],$line[3],$line[4],$line[5],$line[6]";
         $gene = $line[1];
         next unless defined $gene;
-        if ($line[5] == $line[6]){
+        $key = "$line[2],$line[3],$line[4],$line[5],$line[6]";
+        next unless defined $key;
+        if ($line[3] == $line[4]){
             if(exists $pointcoding{$key}){
                 $category = "point coding";
-                $mutationSyntax = $exon{$key}{"mutationSyntax"};
-                $proteinSyntax = $exon{$key}{"proteinSyntax"};
+                if(defined $exon{$key}{"mutationSyntax"}){
+                    $mutationSyntax = $exon{$key}{"mutationSyntax"};
+                }else{
+                    $mutationSyntax = "NA";
+                }
+                if(defined $exon{$key}{"proteinSyntax"}){
+                    $proteinSyntax = $exon{$key}{"proteinSyntax"};
+                }else{
+                     $proteinSyntax = "NA";
+                }
                 $scoreCategory = "radial SVM";
                 if(exists $radialSVM{$key}){
                     $score = $radialSVM{$key}
@@ -131,7 +141,7 @@ sub processAnnovar{
                     $score = "NA";
                 }
             }else{
-                $category = "point coding";
+                $category = "point noncoding";
                 $mutationSyntax = "NA";
                 $proteinSyntax = "NA";
                 $scoreCategory = "FunSeq2";
@@ -143,7 +153,7 @@ sub processAnnovar{
             }
         }else{
             $category = "structural variation";
-            if(exists $exon{$key}){
+            if(exists $exon{$key}{"mutationSyntax"} and exists $exon{$key}{"proteinSyntax"}){
                 $mutationSyntax = $exon{$key}{"mutationSyntax"};
                 $proteinSyntax = $exon{$key}{"proteinSyntax"};
             }else{
@@ -163,10 +173,14 @@ sub processAnnovar{
         $icagesMutations{$gene}{$key}{"scoreCategory"} = $scoreCategory;
         $icagesMutations{$gene}{$key}{"score"} = $score;
     }
-    
+    print OUT "geneName,chrmosomeNumber,start,end,reference,alternative,category,mutationSyntax,proteinSyntax,scoreCategory,mutationScore\n";
     foreach my $gene (sort keys %icagesMutations){
-        foreach my $mutation (sort keys %{$icagesMutation{$gene}}){
-            print OUT "$gene,$key,$icagesMutations{$gene}{$key}{\"category\"},$icagesMutations{$gene}{$key}{\"mutationSyntax\"},$icagesMutations{$gene}{$key}{\"proteinSyntax\"},$icagesMutations{$gene}{$key}{\"scoreCategory\"},$icagesMutations{$gene}{$key}{\"score\"}\n";
+        foreach my $mutation (sort keys %{$icagesMutations{$gene}}){
+           if (defined $gene and defined $mutation and defined $icagesMutations{$gene}{$mutation}{"category"} and defined $icagesMutations{$gene}{$mutation}{"mutationSyntax"} and defined $icagesMutations{$gene}{$mutation}{"proteinSyntax"} and defined $icagesMutations{$gene}{$mutation}{"scoreCategory"} and defined $icagesMutations{$gene}{$mutation}{"score"}){
+               print OUT "$gene,$mutation,$icagesMutations{$gene}{$mutation}{\"category\"},$icagesMutations{$gene}{$mutation}{\"mutationSyntax\"},$icagesMutations{$gene}{$mutation}{\"proteinSyntax\"},$icagesMutations{$gene}{$mutation}{\"scoreCategory\"},$icagesMutations{$gene}{$mutation}{\"score\"}\n" ;
+            }else{
+                print "$gene,$mutation,$icagesMutations{$gene}{$mutation}{\"category\"},$icagesMutations{$gene}{$mutation}{\"mutationSyntax\"},$icagesMutations{$gene}{$mutation}{\"proteinSyntax\"},$icagesMutations{$gene}{$mutation}{\"scoreCategory\"},$icagesMutations{$gene}{$mutation}{\"score\"}\n" ;
+            }
         }
     }
 }
@@ -242,38 +256,36 @@ sub loadDatabase{
 
 
 sub annotateMutation{
-    my ($DBLocation, $annovarInputFile, $snpFile, $cnvFile);
-    $DBLocation = shift;
+    my ($DBLocation, $icagesLocation, $callAnnovar, $annovarInputFile, $snpFile, $cnvFile);
+    $icagesLocation = shift;
     $annovarInputFile = shift;
+    $DBLocation = $icagesLocation . "db/";
     $snpFile = $annovarInputFile . ".snp";
     $cnvFile = $annovarInputFile . ".cnv";
+    $callAnnovar = $icagesLocation . "bin/annovar/annotate_variation.pl";
     my @children_pids;
     $children_pids[0] = fork();
     if($children_pids[0] == 0){
         print "NOTICE: start to run ANNOVAR region annotation to annotate structural variations or variants associated with LOF changes\n";
-        push (@log, "iCAGES: start to run ANNOVAR region annotation to annotate structural variations or variants associated with LOF changes");
         !system("$callAnnovar -regionanno -build hg19 -out $cnvFile -dbtype cnv $cnvFile $DBLocation -scorecolumn 4 --colsWanted 0") or die "ERROR: cannot call structural varation\n";
         exit 0;
     }
     $children_pids[1] = fork();
     if($children_pids[1] == 0){
         print "NOTICE: start to run ANNOVAR index function to fetch radial SVM score for each mutation \n";
-        push (@log, "iCAGES: start to run ANNOVAR index function to fetch radial SVM score for each mutation");
         !system("$callAnnovar -filter -out $snpFile -build hg19 -dbtype iCAGES $snpFile $DBLocation") or die "ERROR: cannot call icages\n";
         exit 0;
     }
     $children_pids[2] = fork();
     if($children_pids[2] == 0){
         print "NOTICE: start to run ANNOVAR index function to fetch funseq score for each mutation \n";
-        push (@log, "iCAGES: start to run ANNOVAR index function to fetch funseq score for each mutation");
         !system("$callAnnovar -filter -out $snpFile -build hg19 -dbtype funseq2 $snpFile $DBLocation") or die "ERROR: cannot call funseq2\n";
         exit 0;
     }
     $children_pids[3] = fork();
     if($children_pids[3] == 0){
         print "NOTICE: start annotating each mutaiton using ANNOVAR\n";
-        push (@log, "iCAGES: start annotating each mutaiton using ANNOVAR");
-        !system("$callAnnovar -out $outputFile -build hg19 $outputFile $DBLocation") or die "ERROR: cannot call annovar\n";
+        !system("$callAnnovar -out $annovarInputFile -build hg19 $annovarInputFile $DBLocation") or die "ERROR: cannot call annovar\n";
         exit 0;
     }
     for (0.. $#children_pids){
