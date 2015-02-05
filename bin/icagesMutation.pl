@@ -198,7 +198,7 @@ sub formatConvert{
     $formatCheckFirstLine = <IN>;
     chomp $formatCheckFirstLine;
     close IN;
-    $callConvertToAnnovar = $icagesLocation . "bin/DGIdb/convert2annovar.pl";
+    $callConvertToAnnovar = $icagesLocation . "bin/annovar/convert2annovar.pl";
     if($formatCheckFirstLine =~ /^##fileformat=VCF/){                                                               #VCF
         !system("$callConvertToAnnovar -format vcf4 $rawInputFile > $annovarInputFile") or die "ERROR: cannot execute convert2annovar.pl for converting VCF file\n";
     }else{                                                                                                          #ANNOVAR
