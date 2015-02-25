@@ -18,7 +18,7 @@ perl icages.pl --help
 
 - initialize icages (after downloaded iCAGES, please first INITIALIZE it before using it): 
 ```
-perl icagesInitial.pl
+perl icagesInitiate.pl
 ```
 
 - use icages for prioritize mutations in input.txt file (in ANNOVAR input format)
