@@ -41,8 +41,6 @@ For commercial use, you are required to contact [Stevens Institute of Innovation
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-The terms above do not apply to `external` directory, which contains optional components for running Phenolyzer and each component has its own license restrictions. We include them in the package for the convenience of users.
-
 ## Contact
 - Coco Chengliang Dong (chenglid@usc.edu)
 - Kai Wang (kaiwang@usc.edu)
