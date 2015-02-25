@@ -6,12 +6,17 @@ All cancers arise as a result of the acquisition of somatic mutations that drive
 
 ## Synopsis
 
+- download iCAGES
+```
+git clone https://github.com/WangGenomicsLab/icages.git
+```
+
 - print help message
 ```
 perl icages.pl --help
 ```
 
-- initialize icages: 
+- initialize icages (after downloaded iCAGES, please first INITIALIZE it before using it): 
 ```
 perl icagesInitialize.pl
 ```
