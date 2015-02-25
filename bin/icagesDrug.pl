@@ -226,7 +226,7 @@ sub processDrugs{
             }
         }
     }
-    print OUT "drugName,finalTarget,directTarget,maxRadialSVMScore,maxBioSystemsScore,maxActivityScore,icagesDrugScore\n";
+    print OUT "drugName,finalTarget,directTarget,iCAGESGeneScore,maxBioSystemsScore,maxActivityScore,icagesDrugScore\n";
     foreach my $drug (sort {$icagesPrint{$b}{"score"} <=> $icagesPrint{$a}{"score"}} keys %icagesPrint){
         print OUT "$icagesPrint{$drug}{\"content\"}\n";
     }

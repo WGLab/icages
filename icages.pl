@@ -8,7 +8,7 @@ use Getopt::Long;
 ######################################################## variable declaration ########################################################
 ######################################################################################################################################
 my ($inputLocation, $icagesLocation);
-my ($icagesMutation, $icagesGene, $icagesDrug);
+my ($icagesMutation, $icagesGene, $icagesDrug, $icagesJson);
 
 ######################################################################################################################################
 ############################################################# main  ##################################################################
@@ -17,10 +17,12 @@ my ($icagesMutation, $icagesGene, $icagesDrug);
 $icagesMutation = $icagesLocation. "bin/icagesMutation.pl";
 $icagesGene = $icagesLocation . "bin/icagesGene.pl";
 $icagesDrug = $icagesLocation . "bin/icagesDrug.pl";
+$icagesJson = $icagesLocation . "bin/icagesJson.pl";
 
 !system("perl $icagesMutation $inputLocation $icagesLocation") or die "ERROR: cannot call icagesMutation module\n";
 !system("perl $icagesGene $inputLocation $icagesLocation") or die "ERROR: cannot call icagesGene module\n";
 !system("perl $icagesDrug $inputLocation $icagesLocation") or die "ERROR: cannot call icagesDrug module\n";
+!system("perl $icagesJson $inputLocation $icagesLocation") or die "ERROR: cannot call icagesJson module\n";
 
 ######################################################################################################################################
 ########################################################## subroutines ###############################################################
