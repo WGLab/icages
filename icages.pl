@@ -14,6 +14,7 @@ my ($icagesMutation, $icagesGene, $icagesDrug, $icagesJson);
 ############################################################# main  ##################################################################
 ######################################################################################################################################
 ($inputLocation, $icagesLocation) =  &processArguments();
+&checkReady($icagesLocation);
 $icagesMutation = $icagesLocation. "bin/icagesMutation.pl";
 $icagesGene = $icagesLocation . "bin/icagesGene.pl";
 $icagesDrug = $icagesLocation . "bin/icagesDrug.pl";
@@ -27,6 +28,16 @@ $icagesJson = $icagesLocation . "bin/icagesJson.pl";
 ######################################################################################################################################
 ########################################################## subroutines ###############################################################
 ######################################################################################################################################
+
+sub checkReady() {
+    my $icagesLocation = shift;
+    my $dbLocation = $icagesLocation . "db";
+    if(-d $dbLocation){
+        return 1;
+    }else{
+        die "ERROR: please initiate iCAGES databases and scripts first using 'perl icagesInitiate.pl' command\n";
+    }
+}
 
 sub processArguments {
     my ($help, $manual, $inputLocation, $icagesLocation);
@@ -63,11 +74,14 @@ sub processArguments {
         -m, --manual                    print manual message
  
  Function: iCAGES predicts cancer driver genes given somatic mutations (in ANNOVAR/VCF format) from a patient.
+ 
  Example: icages.pl /path/to/input.vcf
-                                                                                                                                                                                                                                                                               
+ 
+ Installation: before using iCAGES, please first install it by 'perl icagesInitiate.pl' command.
+ 
  Version: 1.0
-
- Last update: Wed Aug 20 19:47:38 PDT 2014
+ 
+ Last update: Wed Feb 25 12:51:17 PST 2015
  
 =head1 OPTIONS
 
