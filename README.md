@@ -4,19 +4,20 @@ This is iCAGES command line that prioritizes personalized cancer driver mutation
 ## Introduction
 All cancers arise as a result of the acquisition of somatic mutations that drive the disease progression. It remains a challenge to identify driver mutations/genes for an individual patient and design drug therapies. To tackle this challenge, we developed iCAGES, a novel statistical framework to rapidly analyze patient-specific cancer genomic data, prioritize personalized cancer driver events and predict personalized therapies. An iCAGES web server can be downloaded from [here](http://www.github.com/WangGenomicsLab/icases-server) and installed locally.
 
+## Installation
+
+
 ## Synopsis
 
 - download iCAGES
 ```
-git clone https://github.com/WangGenomicsLab/icages.git
+wget https://github.com/WangGenomicsLab/icages/archive/v0.1.tar.gz
 ```
 
 - print help message
 ```
 perl icages.pl --help
 ```
-
-- initialize icages (after downloaded iCAGES, please first INITIALIZE it before using it). Please read the documentation on downloading databases.
 
 - use icages for prioritize mutations in input.txt file (in ANNOVAR input format)
 ```
