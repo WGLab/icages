@@ -44,7 +44,7 @@ For commercial use, you are required to contact [Stevens Institute of Innovation
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ## Reference
-**Dong C**, Yang H, Liu X, Wang K. [iCAGES: integrated CAncer GEnome Score for understanding personal cancer genomes](http://www.ashg.org/2014meeting/abstracts/fulltext/f140121135.htm). _American Society of Human Genetics Annual Meeting_, San Diego, 2014
+Dong C, Yang H, He Z, Liu X, Wang K. **iCAGES: integrated CAncer GEnome Score for understanding personal cancer genomes**. bioRxiv doi: http://dx.doi.org/10.1101/015008
 
 ## Contact
 - Coco Chengliang Dong (chenglid@usc.edu)
