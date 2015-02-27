@@ -2,7 +2,7 @@
 This is iCAGES command line that prioritizes personalized cancer driver mutations, genes and therapies.
 
 ## Introduction
-All cancers arise as a result of the acquisition of somatic mutations that drive the disease progression. It remains a challenge to identify driver mutations/genes for an individual patient and design drug therapies. To tackle this challenge, we developed iCAGES, a novel statistical framework to rapidly analyze patient-specific cancer genomic data, prioritize personalized cancer driver events and predict personalized therapies.
+All cancers arise as a result of the acquisition of somatic mutations that drive the disease progression. It remains a challenge to identify driver mutations/genes for an individual patient and design drug therapies. To tackle this challenge, we developed iCAGES, a novel statistical framework to rapidly analyze patient-specific cancer genomic data, prioritize personalized cancer driver events and predict personalized therapies. An iCAGES web server can be downloaded from [here](http://www.github.com/WangGenomicsLab/icases-server) and installed locally.
 
 ## Synopsis
 
@@ -41,6 +41,9 @@ For academic and non-profit use, you are free to fork, download, modify, distrib
 For commercial use, you are required to contact [Stevens Institute of Innovation](https://stevens.usc.edu/contact-us/) at USC directly to discuss licensing options.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+## Reference
+**Dong C**, Yang H, Liu X, Wang K. [iCAGES: integrated CAncer GEnome Score for understanding personal cancer genomes](http://www.ashg.org/2014meeting/abstracts/fulltext/f140121135.htm). _American Society of Human Genetics Annual Meeting_, San Diego, 2014
 
 ## Contact
 - Coco Chengliang Dong (chenglid@usc.edu)
