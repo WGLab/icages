@@ -33,8 +33,8 @@ cpanm LWP
 ```
 - install other dependencies for iCAGES 
   *  ANNOVAR
-1. please visit [ANNOVAR](http://www.openbioinformatics.org/annovar/annovar_download.html) website and download it
-2. if your current direcotry is icages-0.1, then please move annovar/ directory to ./bin diretory 
+   1. please visit [ANNOVAR](http://www.openbioinformatics.org/annovar/annovar_download.html) website and download it
+   2. if your current direcotry is icages-0.1, then please move annovar/ directory to ./bin diretory 
 ```
 mv path-to-annovar/annovar/ ./bin/
 ```
