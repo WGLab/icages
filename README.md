@@ -25,14 +25,14 @@ wget http://icages.usc.edu/download/icages/db.tar.gz
 tar -zxvf db.tar.gz
 ```
 - install necessary packages for perl
-- if you have root access, please use cpanm command to download JSON, HTTP::Request and LWP packages for perl
+  * if you have root access, please use cpanm command to download JSON, HTTP::Request and LWP packages for perl
 ```
 cpanm JSON
 cpanm HTTP::Request
 cpanm LWP
 ```
-- install other dependencies for iCAGES
-- ANNOVAR
+- install other dependencies for iCAGES 
+  *  ANNOVAR
 1. please visit [ANNOVAR](http://www.openbioinformatics.org/annovar/annovar_download.html) website and download it
 2. if your current direcotry is icages-0.1, then please move annovar/ directory to ./bin diretory 
 ```
