@@ -35,7 +35,7 @@ sub checkReady() {
     if(-d $dbLocation){
         return 1;
     }else{
-        die "ERROR: please initiate iCAGES databases and scripts first using 'perl icagesInitiate.pl' command\n";
+        die "ERROR: please initiate iCAGES databases and scripts first\n";
     }
 }
 
