@@ -4,15 +4,43 @@ This is iCAGES command line that prioritizes personalized cancer driver mutation
 ## Introduction
 All cancers arise as a result of the acquisition of somatic mutations that drive the disease progression. It remains a challenge to identify driver mutations/genes for an individual patient and design drug therapies. To tackle this challenge, we developed iCAGES, a novel statistical framework to rapidly analyze patient-specific cancer genomic data, prioritize personalized cancer driver events and predict personalized therapies. An iCAGES web server can be downloaded from [here](http://www.github.com/WangGenomicsLab/icases-server) and installed locally.
 
-## Installation
-
-
-## Synopsis
-
-- download iCAGES
+## Download
 ```
 wget https://github.com/WangGenomicsLab/icages/archive/v0.1.tar.gz
 ```
+
+## Installation
+- unzip downloaded file
+```
+tar -zxvf icages-0.1.tar.gz
+```
+or 
+```
+unzip icages-0.1.zip
+```
+- download and unzip database files
+```
+cd icages-0.1/
+wget http://icages.usc.edu/download/icages/db.tar.gz
+tar -zxvf db.tar.gz
+```
+- install necessary packages for perl
+- if you have root access, please use cpanm command to download JSON, HTTP::Request and LWP packages for perl
+```
+cpanm JSON
+cpanm HTTP::Request
+cpanm LWP
+```
+- install other dependencies for iCAGES
+- ANNOVAR
+1. please visit [ANNOVAR](http://www.openbioinformatics.org/annovar/annovar_download.html) website and download it
+2. if your current direcotry is icages-0.1, then please move annovar/ directory to ./bin diretory 
+```
+mv path-to-annovar/annovar/ ./bin/
+```
+- DGIdb
+
+## Synopsis
 
 - print help message
 ```
