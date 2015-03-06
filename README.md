@@ -38,7 +38,13 @@ cpanm LWP
 ```
 mv path-to-annovar/annovar/ ./bin/
 ```
-- DGIdb
+  * DGIdb
+    1. if your current directory is icages-0.1, then please create a directory under ./bin directory and name it DGIdb
+    2. please visit [DGIdb](http://dgidb.genome.wustl.edu/) to read about it and download download the corresponding perl script from [here](wget https://raw.github.com/genome/dgi-db/master/files/perl_example.pl) to ./bin/DGIdb directory
+```
+mkdir ./bin/DGIdb
+wget https://raw.github.com/genome/dgi-db/master/files/perl_example.pl -O ./bin/DGIdb/perl_example.pl
+```
 
 ## Synopsis
 
