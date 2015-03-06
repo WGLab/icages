@@ -171,7 +171,8 @@ sub processAnnovar{
         $icagesMutations{$gene}{$key}{"mutationSyntax"} = $mutationSyntax;
         $icagesMutations{$gene}{$key}{"proteinSyntax"} = $proteinSyntax;
         $icagesMutations{$gene}{$key}{"scoreCategory"} = $scoreCategory;
-        $icagesMutations{$gene}{$key}{"score"} = sprintf("%.3f", $score);
+        $score = sprintf("%.3f", $score) unless $score eq "NA";
+        $icagesMutations{$gene}{$key}{"score"} = $score;
     }
     print OUT "geneName,chrmosomeNumber,start,end,reference,alternative,category,mutationSyntax,proteinSyntax,scoreCategory,mutationScore\n";
     foreach my $gene (sort keys %icagesMutations){
