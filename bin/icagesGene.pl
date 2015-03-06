@@ -106,6 +106,7 @@ sub processMutation{
         }
         $icagesGene = -8.0124 + 5.5577 * $radialSVM + 267.3371 * $cnv + 0.3741 * $funseq + 10.0949 * $phenolyzer;
         $icagesGene = 1/(1+exp(-$icagesGene));
+        $icagesGene = sprintf("%.3f", $icagesGene);
         $icagesPrint{$gene}{"score"} = $icagesGene;
         $icagesPrint{$gene}{"content"} = "$gene,$category,$radialSVM,$funseq,$cnv,$phenolyzer,$icagesGene";
     };

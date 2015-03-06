@@ -111,7 +111,7 @@ sub getNeighbors{
         foreach my $neighbor (sort { $biosystem{$b} <=> $biosystem{$a} }  keys %{$biosystem{$gene}}){
             last if $index == 5;
             $index ++;
-            $neighbors{$neighbor}{$gene}{"biosystem"} = $biosystem{$gene}{$neighbor};
+            $neighbors{$neighbor}{$gene}{"biosystem"} = $icagesDrug = sprintf("%.3f", $biosystem{$gene}{$neighbor});
             $neighbors{$neighbor}{$gene}{"icages"} = $icagesGenes{$gene};
             $neighbors{$neighbor}{$gene}{"product"} =  $icagesGenes{$gene} * $biosystem{$gene}{$neighbor};
         }
@@ -221,6 +221,7 @@ sub processDrugs{
         foreach my $neighbor (sort keys %{$icagesDrug{$drug}}){
             foreach my $final (sort keys %{$icagesDrug{$drug}{$neighbor}}){
                 my $icagesDrug = $icagesDrug{$drug}{$neighbor}{$final}{"biosystem"} * $icagesDrug{$drug}{$neighbor}{$final}{"icages"} * $icagesDrug{$drug}{$neighbor}{$final}{"activity"};
+                $icagesDrug = sprintf("%.3f", $icagesDrug);
                 $icagesPrint{$drug}{"score"} = $icagesDrug;
                 $icagesPrint{$drug}{"content"} = "$drug,$final,$neighbor,$icagesDrug{$drug}{$neighbor}{$final}{\"icages\"},$icagesDrug{$drug}{$neighbor}{$final}{\"biosystem\"},$icagesDrug{$drug}{$neighbor}{$final}{\"activity\"},$icagesDrug";
             }
