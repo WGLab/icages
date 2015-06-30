@@ -34,27 +34,27 @@ cpanm LWP
 ```
 mv path-to-annovar/annovar/ ./bin/
 ```
-  * DGIdb
+  * download DGIdb
    1. if your current directory is icages-0.1, then please create a directory under ./bin directory and name it DGIdb
    2. please visit [DGIdb](http://dgidb.genome.wustl.edu/) to read about it and download download the corresponding perl script from [here](wget https://raw.github.com/genome/dgi-db/master/files/perl_example.pl) to ./bin/DGIdb directory
-    ```
-    mkdir ./bin/DGIdb
-    wget https://raw.github.com/genome/dgi-db/master/files/perl_example.pl -O ./bin/DGIdb/get_DrugList.pl
-    ```
-   3. please make some modifications of this get_DrugList.pl file
-    * add this following line after "parse_opts();" 
+```
+mkdir ./bin/DGIdb
+wget https://raw.github.com/genome/dgi-db/master/files/perl_example.pl -O ./bin/DGIdb/get_DrugList.pl
+```
+  * please make some modifications of this get_DrugList.pl file
+   1. add this following line after "parse_opts();" 
     ``` 
     open (OUT, ">$output") or die "iCAGES: cannot open file $output for writing the drugs recommended for cancer driver genes\n";
     ```
-    * add this following line after "'help'                  => \$help,"
+   2. add this following line after "'help'                  => \$help,"
     ```
     'output:s'              => \$output 
     ```
-    * comment out this following line 
+   3. comment out this following line 
     ```
     print "gene_name\tdrug_name\tinteraction_type\tsource\tgene_categories\n";
     ```
-    * change this following line
+   4. change this following line
     ```
     print "$gene_name\t$drug_name\t$interaction_type\t$source\t$gene_categories\n"; 
     ```
@@ -62,7 +62,7 @@ mv path-to-annovar/annovar/ ./bin/
     ```
     print OUT "$gene_name\t$drug_name\t$interaction_type\t$source\t$gene_categories\n"; 
     ```
-    * change this following lines
+   5. change this following lines
     ```
     print "\n" . 'Unmatched search term: ', $_->{searchTerm}, "\n";
     print 'Possible suggestions: ', join(",", @{$_->{suggestions}}), "\n";
