@@ -41,7 +41,38 @@ mv path-to-annovar/annovar/ ./bin/
 mkdir ./bin/DGIdb
 wget https://raw.github.com/genome/dgi-db/master/files/perl_example.pl -O ./bin/DGIdb/get_DrugList.pl
 ```
-
+    3. please make some modifications of this get_DrugList.pl file, including these following changes:
+     a. add this following line after ``` parse_opts(); ```
+     ``` 
+     open (OUT, ">$output") or die "iCAGES: cannot open file $output for writing the drugs recommended for cancer driver genes\n";
+     ```
+     b. add this following line after ``` 'help'                  => \$help,```
+     ```
+     'output:s'              => \$output 
+     ```
+     c. comment out this following line 
+     ```
+     print "gene_name\tdrug_name\tinteraction_type\tsource\tgene_categories\n";
+     ```
+     d. change this following line
+     ```
+     print "$gene_name\t$drug_name\t$interaction_type\t$source\t$gene_categories\n"; 
+     ```
+     into
+     ```
+     print OUT "$gene_name\t$drug_name\t$interaction_type\t$source\t$gene_categories\n"; 
+     ```
+     e. change this following lines
+     ```
+     print "\n" . 'Unmatched search term: ', $_->{searchTerm}, "\n";
+     print 'Possible suggestions: ', join(",", @{$_->{suggestions}}), "\n";
+     ```
+     into
+     ```
+     print OUT "\n" . 'Unmatched search term: ', $_->{searchTerm}, "\n";
+     print OUT 'Possible suggestions: ', join(",", @{$_->{suggestions}}), "\n";
+     ```
+     
 ## Synopsis
 
 - print help message
