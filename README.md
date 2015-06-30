@@ -29,50 +29,50 @@ cpanm LWP
 ```
 - install other dependencies for iCAGES 
   *  ANNOVAR
-    1. please visit [ANNOVAR](http://www.openbioinformatics.org/annovar/annovar_download.html) website and download it
-    2. if your current direcotry is icages-0.1, then please move annovar/ directory to ./bin diretory 
+   1. please visit [ANNOVAR](http://www.openbioinformatics.org/annovar/annovar_download.html) website and download it
+   2. if your current direcotry is icages-0.1, then please move annovar/ directory to ./bin diretory 
 ```
 mv path-to-annovar/annovar/ ./bin/
 ```
   * DGIdb
-    1. if your current directory is icages-0.1, then please create a directory under ./bin directory and name it DGIdb
-    2. please visit [DGIdb](http://dgidb.genome.wustl.edu/) to read about it and download download the corresponding perl script from [here](wget https://raw.github.com/genome/dgi-db/master/files/perl_example.pl) to ./bin/DGIdb directory
+   1. if your current directory is icages-0.1, then please create a directory under ./bin directory and name it DGIdb
+   2. please visit [DGIdb](http://dgidb.genome.wustl.edu/) to read about it and download download the corresponding perl script from [here](wget https://raw.github.com/genome/dgi-db/master/files/perl_example.pl) to ./bin/DGIdb directory
 ```
 mkdir ./bin/DGIdb
 wget https://raw.github.com/genome/dgi-db/master/files/perl_example.pl -O ./bin/DGIdb/get_DrugList.pl
 ```
-    3. please make some modifications of this get_DrugList.pl file, including these following changes
-     a. add this following line after "parse_opts();" 
+   3. please make some modifications of this get_DrugList.pl file, including these following changes
+    a. add this following line after "parse_opts();" 
 ``` 
 open (OUT, ">$output") or die "iCAGES: cannot open file $output for writing the drugs recommended for cancer driver genes\n";
 ```
-     b. add this following line after "'help'                  => \$help,"
+    b. add this following line after "'help'                  => \$help,"
 ```
 'output:s'              => \$output 
 ```
-     c. comment out this following line 
+    c. comment out this following line 
 ```
 print "gene_name\tdrug_name\tinteraction_type\tsource\tgene_categories\n";
 ```
-     d. change this following line
+    d. change this following line
 ```
 print "$gene_name\t$drug_name\t$interaction_type\t$source\t$gene_categories\n"; 
 ```
-     into
+    into
 ```
 print OUT "$gene_name\t$drug_name\t$interaction_type\t$source\t$gene_categories\n"; 
 ```
-     e. change this following lines
+    e. change this following lines
 ```
 print "\n" . 'Unmatched search term: ', $_->{searchTerm}, "\n";
 print 'Possible suggestions: ', join(",", @{$_->{suggestions}}), "\n";
 ```
-     into
+    into
 ```
 print OUT "\n" . 'Unmatched search term: ', $_->{searchTerm}, "\n";
 print OUT 'Possible suggestions: ', join(",", @{$_->{suggestions}}), "\n";
 ```
-     
+    
 ## Synopsis
 
 - print help message
