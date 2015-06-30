@@ -54,6 +54,10 @@ wget https://raw.github.com/genome/dgi-db/master/files/perl_example.pl -O ./bin/
     ```
     print "gene_name\tdrug_name\tinteraction_type\tsource\tgene_categories\n";
     ```
+     into
+    ```
+    # print "gene_name\tdrug_name\tinteraction_type\tsource\tgene_categories\n";
+    ```
    * change this following line
     ```
     print "$gene_name\t$drug_name\t$interaction_type\t$source\t$gene_categories\n"; 
