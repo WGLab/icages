@@ -43,9 +43,9 @@ wget https://raw.github.com/genome/dgi-db/master/files/perl_example.pl -O ./bin/
 ```
   * Make some modifications of this get_DrugList.pl file
    - add this following line after "parse_opts();" 
-``` 
-open (OUT, ">$output") or die "iCAGES: cannot open file $output for writing the drugs recommended for cancer driver genes\n";
-```
+   ``` 
+   open (OUT, ">$output") or die "iCAGES: cannot open file $output for writing the drugs recommended for cancer driver genes\n";
+   ```
    - add this following line after "'help'                  => \$help,"
 ```
 'output:s'              => \$output 
@@ -62,7 +62,7 @@ into
 ```
 print OUT "$gene_name\t$drug_name\t$interaction_type\t$source\t$gene_categories\n"; 
 ```
-   -. change this following lines
+   - change this following lines
 ```
 print "\n" . 'Unmatched search term: ', $_->{searchTerm}, "\n";
 print 'Possible suggestions: ', join(",", @{$_->{suggestions}}), "\n";
