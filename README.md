@@ -39,7 +39,7 @@ mv path-to-annovar/annovar/ ./bin/
     2. please visit [DGIdb](http://dgidb.genome.wustl.edu/) to read about it and download download the corresponding perl script from [here](wget https://raw.github.com/genome/dgi-db/master/files/perl_example.pl) to ./bin/DGIdb directory
 ```
 mkdir ./bin/DGIdb
-wget https://raw.github.com/genome/dgi-db/master/files/perl_example.pl -O ./bin/DGIdb/perl_example.pl
+wget https://raw.github.com/genome/dgi-db/master/files/perl_example.pl -O ./bin/DGIdb/get_DrugList.pl
 ```
 
 ## Synopsis
