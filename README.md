@@ -37,10 +37,10 @@ mv path-to-annovar/annovar/ ./bin/
   * DGIdb
    1. if your current directory is icages-0.1, then please create a directory under ./bin directory and name it DGIdb
    2. please visit [DGIdb](http://dgidb.genome.wustl.edu/) to read about it and download download the corresponding perl script from [here](wget https://raw.github.com/genome/dgi-db/master/files/perl_example.pl) to ./bin/DGIdb directory
-```
-mkdir ./bin/DGIdb
-wget https://raw.github.com/genome/dgi-db/master/files/perl_example.pl -O ./bin/DGIdb/get_DrugList.pl
-```
+   ```
+   mkdir ./bin/DGIdb
+   wget https://raw.github.com/genome/dgi-db/master/files/perl_example.pl -O ./bin/DGIdb/get_DrugList.pl
+   ```
    3. please make some modifications of this get_DrugList.pl file
     * add this following line after "parse_opts();" 
     ``` 
@@ -58,7 +58,7 @@ wget https://raw.github.com/genome/dgi-db/master/files/perl_example.pl -O ./bin/
     ```
     print "$gene_name\t$drug_name\t$interaction_type\t$source\t$gene_categories\n"; 
     ```
-    into
+     into
     ```
     print OUT "$gene_name\t$drug_name\t$interaction_type\t$source\t$gene_categories\n"; 
     ```
@@ -67,7 +67,7 @@ wget https://raw.github.com/genome/dgi-db/master/files/perl_example.pl -O ./bin/
     print "\n" . 'Unmatched search term: ', $_->{searchTerm}, "\n";
     print 'Possible suggestions: ', join(",", @{$_->{suggestions}}), "\n";
     ```
-    into 
+     into 
     ```
     print OUT "\n" . 'Unmatched search term: ', $_->{searchTerm}, "\n";
     print OUT 'Possible suggestions: ', join(",", @{$_->{suggestions}}), "\n";
