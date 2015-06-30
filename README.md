@@ -12,11 +12,7 @@ wget https://github.com/WangGenomicsLab/icages/archive/v0.1.tar.gz
 ## Installation
 - unzip downloaded file
 ```
-tar -zxvf icages-0.1.tar.gz
-```
-or 
-```
-unzip icages-0.1.zip
+tar -zxvf v0.1.tar.gz
 ```
 - download and unzip database files
 ```
