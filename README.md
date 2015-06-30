@@ -76,7 +76,20 @@ wget https://raw.github.com/genome/dgi-db/master/files/perl_example.pl -O ./bin/
     print OUT "\n" . 'Unmatched search term: ', $_->{searchTerm}, "\n";
     print OUT 'Possible suggestions: ', join(",", @{$_->{suggestions}}), "\n";
     ```
-    
+  * vcftools
+   * assuming you are already in icages-0.1/bin/ directory, download vcftools through sourceforge
+    ```
+    wget http://iweb.dl.sourceforge.net/project/vcftools/vcftools_0.1.12b.tar.gz
+    tar -zxvf vcftools_0.1.12b.tar.gz 
+    mv vcftools_0.1.12b/ vcftools/
+    rm vcftools_0.1.12b.tar.gz
+    ```
+   * install vcftools
+    ```
+    cd vcftools
+    make
+    ```
+
 ## Synopsis
 
 - print help message
