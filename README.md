@@ -41,7 +41,7 @@ mv path-to-annovar/annovar/ ./bin/
 mkdir ./bin/DGIdb
 wget https://raw.github.com/genome/dgi-db/master/files/perl_example.pl -O ./bin/DGIdb/get_DrugList.pl
 ```
-    3. please make some modifications of this get_DrugList.pl file, including these following changes:
+    3. please make some modifications of this get_DrugList.pl file, including these following changes
      a. add this following line after "parse_opts();" 
 ``` 
 open (OUT, ">$output") or die "iCAGES: cannot open file $output for writing the drugs recommended for cancer driver genes\n";
