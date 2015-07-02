@@ -7,27 +7,53 @@ use Getopt::Long;
 ######################################################################################################################################
 ######################################################## variable declaration ########################################################
 ######################################################################################################################################
-my ($inputLocation, $icagesLocation);
 my ($icagesMutation, $icagesGene, $icagesDrug, $icagesJson);
+my ($inputFile, $inputDir, $icagesLocation, $tumor, $germline, $id, $subtype , $logDir, $outputDir, $tempDir, $prefix);
 
 ######################################################################################################################################
 ############################################################# main  ##################################################################
 ######################################################################################################################################
-($inputLocation, $icagesLocation) =  &processArguments();
+($inputDir, $icagesLocation, $tumor, $germline, $id, $subtype , $logDir, $outputDir, $tempDir, $prefix) =  &processArguments();
 &checkReady($icagesLocation);
 $icagesMutation = $icagesLocation. "bin/icagesMutation.pl";
 $icagesGene = $icagesLocation . "bin/icagesGene.pl";
 $icagesDrug = $icagesLocation . "bin/icagesDrug.pl";
 $icagesJson = $icagesLocation . "bin/icagesJson.pl";
-
-!system("perl $icagesMutation $inputLocation $icagesLocation") or die "ERROR: cannot call icagesMutation module\n";
-!system("perl $icagesGene $inputLocation $icagesLocation") or die "ERROR: cannot call icagesGene module\n";
-!system("perl $icagesDrug $inputLocation $icagesLocation") or die "ERROR: cannot call icagesDrug module\n";
-!system("perl $icagesJson $inputLocation $icagesLocation") or die "ERROR: cannot call icagesJson module\n";
+$inputFile = $ARGV[0];
+!system("perl $icagesMutation $inputFile $inputDir $icagesLocation $tumor $germline $id $prefix") or die "ERROR: cannot call icagesMutation module\n";
+!system("perl $icagesGene $inputDir $icagesLocation $subtype $prefix ") or die "ERROR: cannot call icagesGene module\n";
+!system("perl $icagesDrug $inputDir $icagesLocation $prefix") or die "ERROR: cannot call icagesDrug module\n";
+!system("perl $icagesJson $inputDir $icagesLocation $prefix") or die "ERROR: cannot call icagesJson module\n";
+&moveFiles($inputDir, $prefix, $logDir, $outputDir, $tempDir);
 
 ######################################################################################################################################
 ########################################################## subroutines ###############################################################
 ######################################################################################################################################
+
+
+sub moveFiles{
+    my ($inputDir, $prefix, $logDir, $outputDir, $tempDir);
+    my ( $outputFile, $tempFile, $logFile, $jsonFile);
+    $inputDir = shift;
+    $prefix = shift;
+    $logDir = shift;
+    $outputDir = shift;
+    $tempDir = shift;
+    if($inputDir ne $outputDir){
+	$outputFile = "$inputDir/$prefix*icages*.csv";
+	$jsonFile = "$inputDir/$prefix*.json";
+	!system("mv $outputFile $outputDir") or die "ERROR: cannot move iCAGES file\n";
+	!system("mv $jsonFile $outputDir") or die "ERROR: cannot move iCAGES file\n";
+    }
+    if($inputDir ne $logDir){
+	$logFile = "$inputDir/$prefix*.log";
+	!system("mv $logFile $logDir") or die "ERROR: cannot move iCAGES file\n";	
+    }
+    if($inputDir ne $tempDir){
+	$tempFile = "$inputDir/$prefix.*";
+	!system("mv $tempFile $tempDir") or die "ERROR: cannot move iCAGES file\n";
+    }
+}
 
 sub checkReady() {
     my $icagesLocation = shift;
@@ -40,24 +66,88 @@ sub checkReady() {
 }
 
 sub processArguments {
-    my ($help, $manual, $tumor, $germline, $sample, $inputLocation, $icagesLocation);
+    my ($help, $manual, $tumor, $germline, $id, $subtype, $logDir, $outputDir, $tempDir, $prefix, $inputDir, $inputLocation, $icagesLocation);
+    ################### initialize arguments ##################                                                                                                                                           
     GetOptions( 'help|h' => \$help,
     'manual|man|m' => \$manual,
-    'tumor|t' => \$tumor,   # name for tumor in the vcf file
-    'germline|g' => \$germline    # name for germline in the vcf file
-    'sample|s' => \$sample   # sample identifier for the person of interest
-    )or pod2usage ();
-    ######################## arguments ########################
-    $help and pod2usage (-verbose=>1, -exitval=>1, -output=>\*STDOUT);
-    $manual and pod2usage (-verbose=>2, -exitval=>1, -output=>\*STDOUT);
-    @ARGV == 1 or pod2usage ();
+    'tumor|t=s' => \$tumor,   # name for tumor in the vcf file                                                                                                                                             
+    'germline|g=s' => \$germline ,   # name for germline in the vcf file                                                                                                                                  
+    'id|i=s' => \$id,   # sample identifier for the person of interest for multiple sample vcf file                                                                                                        
+    'subtype|s=s' => \$subtype, # cancer subtype                                                                                                                                        
+    'logdir=s' => \$logDir, # log directory                                                                                                                                                                
+    'outputdir=s' => \$outputDir,
+    'tempdir=s' => \$tempDir,
+    'prefix|p=s' => \$prefix
+	)or pod2usage ();
     ################### locations ########################
+    @ARGV == 1 or pod2usage (); # check only has one argument 
     $inputLocation = $ARGV[0];
+    $inputDir = $inputLocation;
+    if($inputDir =~ /\//){
+	$inputDir =~ /(.*\/)(.*?)$/;
+	$inputDir = $1;
+    }else{
+	$inputDir = "./" ;
+    }
     $icagesLocation = "$0";
     $icagesLocation =~ /(.*)icages\.pl/;
     $icagesLocation = $1;
     $icagesLocation = "./" if $icagesLocation eq "";
-    return ($inputLocation, $icagesLocation);
+    ###### all directories should end up with / ###
+    if(!$prefix){
+	$prefix = $ARGV[0];
+	if($prefix =~ /\//){
+	    $prefix =~ /(.*\/)(.*?)$/;   
+	    $prefix = $2;
+	}
+    }
+    if(!$tumor){
+	$tumor = "NA";
+    }
+    if(!$germline){
+	$germline = "NA";
+    }
+    if(!$id){
+	$id = "NA";
+    }
+    if(!$subtype){
+	$subtype = "NA";
+    }
+    if(!$logDir){
+	$logDir = $inputDir;
+    }
+    if(!$outputDir){
+	$outputDir = $inputDir;
+    }
+    if(!$tempDir){
+	$tempDir = $inputDir;
+    }
+    if(-d $logDir){
+        if(!($logDir =~ /\/$/)){
+	    $logDir = $logDir . "/";
+	}	
+    }else{
+	die "ERROR: no such directory for log files\n";
+    }
+    if(-d $outputDir){
+	if(!($outputDir =~ /\/$/)){
+            $outputDir = $outputDir ."/";
+        }
+    }else{
+	die "ERROR: no such directory for output files\n";
+    }
+    if(-d $tempDir){
+	if(!($logDir =~ /\/$/)){
+            $logDir = $logDir ."/";
+        }
+    }else{
+	die "ERROR: no such directory for temp files\n";
+    }
+
+    ######################## arguments ########################
+    $help and pod2usage (-verbose=>1, -exitval=>1, -output=>\*STDOUT);
+    $manual and pod2usage (-verbose=>2, -exitval=>1, -output=>\*STDOUT);
+    return ($inputDir, $icagesLocation, $tumor, $germline, $id, $subtype , $logDir, $outputDir, $tempDir, $prefix);
 }
 
 ######################################################################################################################################
@@ -75,7 +165,14 @@ sub processArguments {
  Options:                                                                                                                                                                                                                                                                     
         -h, --help                      print help message   
         -m, --manual                    print manual message
- 
+        -t, --tumor                     name of column that contains tumor mutations in your vcf file (if you have multiple samples with tumor mutations, please use this option to select tumor mutations that you want to analyze)
+        -g, --germline                  name of column that contains germline mutations in your vcf file (if you have multiple samples with germline mutations, please use this option to select germline mutations that you want to compare your tumor mutations against to generate somatic mutation profiles for the sample you want to analyze)
+        -i, --id                        name of column that contains somatic mutations in your multiple sample vcf file with only somatic mutations (if you have multiple samples with tumor and germline mutations, please use -g and -t options instead)
+        -s, --subtype                   subtype of the cancer, valid options include "ACC", "BLCA", "BRCA", "CESC", "CHOL", "ESCA", "GBM", "HNSC", "KICH", "KIRC", "KIRP", "LAML", "LGG", "LIHC", "LUSC", "OV", "PAAD", "PCPG", "PRAD", "SARC", "SKCM", "STAD", "TGCT", "TGCA", "THYM", "UCEC", "UCS", "UVM"
+        --tempdir                       directory for temporary files generated by iCAGES
+        --outputdir                     directory for output files generated by iCAGES
+        -p, --prefix                    prefix of all files generated by iCAGES
+
  Function: iCAGES predicts cancer driver genes given somatic mutations (in ANNOVAR/VCF format) from a patient.
  
  Example: icages.pl /path/to/input.vcf

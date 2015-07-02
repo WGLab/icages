@@ -9,19 +9,23 @@ use Getopt::Long;
 ######################################################## variable declaration ########################################################
 ######################################################################################################################################
 
-my ($annovarInputFile, $rawInputFile, $icagesLocation);
+my ($annovarInputFile,$rawInputFile, $inputDir ,$icagesLocation , $tumor ,$germline, $id ,$prefix);
 my $nowString;
 my (%sup, %onc);
 
 ######################################################################################################################################
 ########################################################### main  ####################################################################
 ######################################################################################################################################
-
 $rawInputFile = $ARGV[0];
-$icagesLocation = $ARGV[1];
+$inputDir = $ARGV[1];
+$icagesLocation = $ARGV[2];
+$tumor = $ARGV[3];
+$germline = $ARGV[4];
+$id = $ARGV[5];
+$prefix = $ARGV[6];
 $nowString = localtime();
-$annovarInputFile = &runAnnovar($rawInputFile, $icagesLocation);
-&processAnnovar($annovarInputFile, $rawInputFile);
+$annovarInputFile = &runAnnovar($rawInputFile, $inputDir ,$icagesLocation ,$tumor ,$germline ,$id, $prefix );
+&processAnnovar($annovarInputFile);
 
 ######################################################################################################################################
 ############################################################# subroutines ############################################################
@@ -29,17 +33,23 @@ $annovarInputFile = &runAnnovar($rawInputFile, $icagesLocation);
 
 sub runAnnovar {
     print "NOTICE: start runing iCAGES packge at $nowString\n";
-    my ($rawInputFile, $annovarInputFile);                                                                      #ANNOVAR input files
-    my ($icagesLocation, $callAnnotateVariation, $DBLocation);                                                  #ANNOVAR commands
+    my ($rawInputFile, $annovarInputFile);                                             #ANNOVAR input files
+    my ($icagesLocation, $callAnnotateVariation, $DBLocation);                         #ANNOVAR commands
+    my ($tumor, $germline ,$id ,$prefix);                                     #VCF conversion paramters & prefix for output
     my ($radialSVMDB, $radialSVMIndex, $funseq2DB, $funseq2Index, $refGeneDB, $refGeneIndex, $cnvDB);           #ANNOVAR DB files: iCAGES score (index), refGene (fasta), dbSNP
     my ($log, $annovarLog);
     my $nowString = localtime;                                                                                  #SYSTEM local time
     $rawInputFile = shift;
+    $inputDir = shift;
     $icagesLocation = shift;
+    $tumor = shift;
+    $germline = shift;
+    $id = shift;
+    $prefix = shift;
     $callAnnotateVariation = $icagesLocation . "bin/annovar/annotate_variation.pl";
-    $annovarInputFile = $rawInputFile . ".annovar";
+    $annovarInputFile = $inputDir . "/" . $prefix . ".annovar";
     $DBLocation = $icagesLocation . "db/";
-    &formatConvert($rawInputFile, $annovarInputFile, $icagesLocation);
+    &formatConvert($rawInputFile, $annovarInputFile, $icagesLocation, $tumor, $germline , $id );
     &divideMutation($annovarInputFile);
     &loadDatabase($DBLocation);
     &annotateMutation($icagesLocation, $annovarInputFile);
@@ -51,13 +61,12 @@ sub runAnnovar {
 sub processAnnovar{
     print "NOTICE: start processing output from ANNOVAR\n";
     my $annovarInputFile = shift;
-    my $rawInputFile = shift;
     my $annovarVariantFunction = $annovarInputFile . ".variant_function";
     my $annovarExonVariantFunction = $annovarInputFile . ".exonic_variant_function";
     my $annovarRadialSVM = $annovarInputFile . ".snp.hg19_iCAGES_dropped";
     my $annovarCNV = $annovarInputFile . ".cnv.hg19_cnv";
     my $annovarFunseq2 = $annovarInputFile . ".snp.hg19_funseq2_dropped";
-    my $icagesMutations = $rawInputFile . ".icagesMutations.csv";
+    my $icagesMutations = $annovarInputFile . ".icagesMutations.csv";
     open(GENE, "$annovarVariantFunction") or die "ERROR: cannot open file $annovarVariantFunction\n";
     open(EXON, "$annovarExonVariantFunction") or die "ERROR: cannot open file $annovarExonVariantFunction\n";
     open(CNV, "$annovarCNV") or die "ERROR: cannot open file $annovarCNV\n";
@@ -187,20 +196,54 @@ sub processAnnovar{
 
 
 sub formatConvert{
+    # $rawInputFile, $annovarInputFile, $icagesLocation, $tumor, $germline , $id
     print "NOTICE: start input file format checking and converting format if needed\n";
     my ($rawInputFile, $annovarInputFile);
+    my ( $tumor, $germline , $id, $prefix ); # parameters for vcf conversion
     my  $callConvertToAnnovar;
+    my $callvcftools;
     my $formatCheckFirstLine;
     $rawInputFile = shift;
     $annovarInputFile = shift;
     $icagesLocation = shift;
+    $tumor = shift;
+    $germline = shift;
+    $id = shift;
     open(IN, "$rawInputFile") or die "ERROR: cannot open $rawInputFile\n";
     $formatCheckFirstLine = <IN>;
     chomp $formatCheckFirstLine;
+    my $multipleSampleCheck = 0;
+    while(<IN>){
+	chomp;
+	my $line = $_;
+	if($line =~ /^#CHROM/){
+	    my @line = split;
+	    if($#line > 8){
+		$multipleSampleCheck = 1;
+	    }
+	    last;
+	}
+    }
     close IN;
     $callConvertToAnnovar = $icagesLocation . "bin/annovar/convert2annovar.pl";
-    if($formatCheckFirstLine =~ /^##fileformat=VCF/){                                                               #VCF
-        !system("$callConvertToAnnovar -format vcf4 $rawInputFile > $annovarInputFile") or die "ERROR: cannot execute convert2annovar.pl for converting VCF file\n";
+    $callvcftools = $icagesLocation . "bin/vcftools/bin/vcftools";
+    if($formatCheckFirstLine =~ /^##fileformat=VCF/){             #VCF
+	if($multipleSampleCheck and $tumor eq "NA" and $germline eq "NA" and $id eq "NA"){
+	    die "ERROR: your vcf file contains multiple samples please specify a valid sample identifier \n";
+	}
+	if($tumor ne "NA" and $germline ne "NA"){
+	    !system("$callvcftools --recode --vcf $rawInputFile --indv $tumor --out $rawInputFile.$tumor") or die "ERROR: please specify a valid sample identifier for tumor sample\n";
+	    !system("$callvcftools --recode --vcf $rawInputFile --indv $germline --out $rawInputFile.$germline") or die "ERROR: please specify a valid sample identifier for germline variants\n";
+	    !system("$callConvertToAnnovar -format vcf4 $rawInputFile.$tumor.recode.vcf > $rawInputFile.$tumor.ann") or die "ERROR: cannot execute convert2annovar.pl for converting VCF file\n";
+	    !system("$callConvertToAnnovar -format vcf4 $rawInputFile.$germline.recode.vcf > $rawInputFile.$germline.ann") or die "ERROR: cannot execute convert2annovar.pl for converting VCF file\n";
+	    !system("cat $rawInputFile.$tumor.ann $rawInputFile.$germline.ann | uniq -u > $annovarInputFile") or die "ERROR: cannot generate somatic variants input file for iCAGES, please double check teh format of your input files\n";
+	}elsif($id ne "NA"){
+	    !system("$callvcftools --recode --vcf $rawInputFile --indv $id --out $rawInputFile.$id") or die "ERROR: please specify a valid sample identifier for somatic variants of your interest\n";
+	    !system("$callConvertToAnnovar -format vcf4 $rawInputFile.$id.recode.vcf > $annovarInputFile") or die "ERROR: cannot execute convert2annovar.pl for converting VCF file\n";
+	}else{
+	    !system("$callConvertToAnnovar -format vcf4 $rawInputFile > $annovarInputFile") or die "ERROR: cannot execute convert2annovar.pl for converting VCF file\n";
+	}
+        
     }else{                                                                                                          #ANNOVAR
         !system("cp $rawInputFile $annovarInputFile") or die "ERROR: cannot use input file $rawInputFile\n";
     }
