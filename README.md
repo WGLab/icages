@@ -26,6 +26,7 @@ tar -zxvf db.tar.gz
 cpanm JSON
 cpanm HTTP::Request
 cpanm LWP
+cpanm Vcf
 ```
 - install other dependencies for iCAGES 
   *  ANNOVAR
