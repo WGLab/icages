@@ -111,7 +111,7 @@ sub getNeighbors{
         foreach my $neighbor (sort { $biosystem{$b} <=> $biosystem{$a} }  keys %{$biosystem{$gene}}){
             last if $index == 5;
             $index ++;
-            $neighbors{$neighbor}{$gene}{"biosystem"} = sprintf("%.3f", $biosystem{$gene}{$neighbor});
+            $neighbors{$neighbor}{$gene}{"biosystem"} = $biosystem{$gene}{$neighbor};
             $neighbors{$neighbor}{$gene}{"icages"} = $icagesGenes{$gene};
             $neighbors{$neighbor}{$gene}{"product"} =  $icagesGenes{$gene} * $biosystem{$gene}{$neighbor};
         }
@@ -135,7 +135,7 @@ sub getDrugs{
     %onc = %{$oncRef};
     %sup = %{$supRef};
     @seeds = keys %neighbors;
-    $callDgidb = $icagesLocation . "bin/DGIdb/perl_example.pl";
+    $callDgidb = $icagesLocation . "bin/DGIdb/getDrugList.pl";
     $supFile = $rawInputFile . ".suppressor.drug";
     $oncFile = $rawInputFile . ".oncogene.drug";
     $otherFile = $rawInputFile . ".other.drug";
@@ -152,13 +152,13 @@ sub getDrugs{
     $onc = join(",", @onc);
     $other = join(",", @other);
     if($sup ne ""){
-        !system("perl $callDgidb --genes='$sup' --interaction_type='activator,other/unknown,n/a,inducer,stimulator' --source_trust_levels='Expert curated' > $supFile") or die "ERROR: cannot get drugs\n";
+        !system("$callDgidb --genes='$sup' --interaction_type='activator,other/unknown,n/a,inducer,stimulator' --source_trust_levels='Expert curated' --output='$supFile'") or die "ERROR: cannot get drugs\n";
     }
     if($onc ne ""){
-        !system("perl $callDgidb --genes='$onc' --interaction_type='inhibitor,suppressor,antibody,antagonist,blocker,other/unknown,n/a' --source_trust_levels='Expert curated' > $oncFile") or die "ERROR: cannot get drugs\n";
+        !system("$callDgidb --genes='$onc' --interaction_type='inhibitor,suppressor,antibody,antagonist,blocker,other/unknown,n/a' --source_trust_levels='Expert curated' --output='$oncFile'") or die "ERROR: cannot get drugs\n";
     }
     if($other ne ""){
-        !system("perl $callDgidb --genes='$other' --interaction_type='inhibitor,suppressor,antibody,antagonist,blocker,activator,other/unknown,n/a,inducer,stimulator' --source_trust_levels='Expert curated' > $otherFile") or die "ERROR: cannot get drugs\n";
+        !system("$callDgidb --genes='$other' --interaction_type='inhibitor,suppressor,antibody,antagonist,blocker,activator,other/unknown,n/a,inducer,stimulator' --source_trust_levels='Expert curated' --output='$otherFile'") or die "ERROR: cannot get drugs\n";
     }
 }
 
@@ -221,7 +221,6 @@ sub processDrugs{
         foreach my $neighbor (sort keys %{$icagesDrug{$drug}}){
             foreach my $final (sort keys %{$icagesDrug{$drug}{$neighbor}}){
                 my $icagesDrug = $icagesDrug{$drug}{$neighbor}{$final}{"biosystem"} * $icagesDrug{$drug}{$neighbor}{$final}{"icages"} * $icagesDrug{$drug}{$neighbor}{$final}{"activity"};
-                $icagesDrug = sprintf("%.3f", $icagesDrug);
                 $icagesPrint{$drug}{"score"} = $icagesDrug;
                 $icagesPrint{$drug}{"content"} = "$drug,$final,$neighbor,$icagesDrug{$drug}{$neighbor}{$final}{\"icages\"},$icagesDrug{$drug}{$neighbor}{$final}{\"biosystem\"},$icagesDrug{$drug}{$neighbor}{$final}{\"activity\"},$icagesDrug";
             }

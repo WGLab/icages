@@ -35,14 +35,17 @@ sub checkReady() {
     if(-d $dbLocation){
         return 1;
     }else{
-        die "ERROR: please initiate iCAGES databases and scripts first\n";
+        die "ERROR: please download iCAGES database first https://github.com/WangGenomicsLab/icages \n";
     }
 }
 
 sub processArguments {
-    my ($help, $manual, $inputLocation, $icagesLocation);
+    my ($help, $manual, $tumor, $germline, $sample, $inputLocation, $icagesLocation);
     GetOptions( 'help|h' => \$help,
-    'manual|man|m' => \$manual
+    'manual|man|m' => \$manual,
+    'tumor|t' => \$tumor,   # name for tumor in the vcf file
+    'germline|g' => \$germline    # name for germline in the vcf file
+    'sample|s' => \$sample   # sample identifier for the person of interest
     )or pod2usage ();
     ######################## arguments ########################
     $help and pod2usage (-verbose=>1, -exitval=>1, -output=>\*STDOUT);
