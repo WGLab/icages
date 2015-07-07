@@ -9,7 +9,7 @@ use Getopt::Long;
 ######################################################## variable declaration ########################################################
 ######################################################################################################################################
 
-my ($annovarInputFile,$rawInputFile, $inputDir ,$icagesLocation , $tumor ,$germline, $id ,$prefix, $bed);
+my ($annovarInputFile,$rawInputFile, $inputDir ,$icagesLocation , $tumor ,$germline, $id ,$prefix, $bed, $hg);
 my $nowString;
 my (%sup, %onc);
 
@@ -24,8 +24,9 @@ $germline = $ARGV[4];
 $id = $ARGV[5];
 $prefix = $ARGV[6];
 $bed = $ARGV[7];
+$hg = $ARGV[8];
 $nowString = localtime();
-$annovarInputFile = &runAnnovar($rawInputFile, $inputDir ,$icagesLocation ,$tumor ,$germline ,$id, $prefix, $bed );
+$annovarInputFile = &runAnnovar($rawInputFile, $inputDir ,$icagesLocation ,$tumor ,$germline ,$id, $prefix, $bed, $hg );
 &processAnnovar($annovarInputFile);
 
 ######################################################################################################################################
@@ -49,13 +50,14 @@ sub runAnnovar {
     $id = shift;
     $prefix = shift;
     $bed = shift;
+    $hg = shift;
     $callAnnotateVariation = $icagesLocation . "bin/annovar/annotate_variation.pl";
     $annovarInputFile = $inputDir . "/" . $prefix . ".annovar";
     $DBLocation = $icagesLocation . "db/";
     &formatConvert($rawInputFile, $annovarInputFile, $icagesLocation, $tumor, $germline , $id , $bed );
     &divideMutation($annovarInputFile);
     &loadDatabase($DBLocation);
-    &annotateMutation($icagesLocation, $annovarInputFile);
+    &annotateMutation($icagesLocation, $annovarInputFile, $hg);
     return $annovarInputFile;
 }
 
@@ -325,9 +327,10 @@ sub loadDatabase{
 
 
 sub annotateMutation{
-    my ($DBLocation, $icagesLocation, $callAnnovar, $annovarInputFile, $snpFile, $cnvFile);
+    my ($DBLocation, $icagesLocation, $callAnnovar, $annovarInputFile, $snpFile, $cnvFile, $hg);
     $icagesLocation = shift;
     $annovarInputFile = shift;
+    $hg = shift;
     $DBLocation = $icagesLocation . "db/";
     $snpFile = $annovarInputFile . ".snp";
     $cnvFile = $annovarInputFile . ".cnv";
@@ -336,25 +339,25 @@ sub annotateMutation{
     $children_pids[0] = fork();
     if($children_pids[0] == 0){
         print "NOTICE: start to run ANNOVAR region annotation to annotate structural variations or variants associated with LOF changes\n";
-        !system("$callAnnovar -regionanno -build hg19 -out $cnvFile -dbtype cnv $cnvFile $DBLocation -scorecolumn 4 --colsWanted 0") or die "ERROR: cannot call structural varation\n";
+        !system("$callAnnovar -regionanno -build $hg -out $cnvFile -dbtype cnv $cnvFile $DBLocation -scorecolumn 4 --colsWanted 0") or die "ERROR: cannot call structural varation\n";
         exit 0;
     }
     $children_pids[1] = fork();
     if($children_pids[1] == 0){
         print "NOTICE: start to run ANNOVAR index function to fetch radial SVM score for each mutation \n";
-        !system("$callAnnovar -filter -out $snpFile -build hg19 -dbtype iCAGES $snpFile $DBLocation") or die "ERROR: cannot call icages\n";
+        !system("$callAnnovar -filter -out $snpFile -build $hg -dbtype iCAGES $snpFile $DBLocation") or die "ERROR: cannot call icages\n";
         exit 0;
     }
     $children_pids[2] = fork();
     if($children_pids[2] == 0){
         print "NOTICE: start to run ANNOVAR index function to fetch funseq score for each mutation \n";
-        !system("$callAnnovar -filter -out $snpFile -build hg19 -dbtype funseq2 $snpFile $DBLocation") or die "ERROR: cannot call funseq2\n";
+        !system("$callAnnovar -filter -out $snpFile -build $hg -dbtype funseq2 $snpFile $DBLocation") or die "ERROR: cannot call funseq2\n";
         exit 0;
     }
     $children_pids[3] = fork();
     if($children_pids[3] == 0){
         print "NOTICE: start annotating each mutaiton using ANNOVAR\n";
-        !system("$callAnnovar -out $annovarInputFile -build hg19 $annovarInputFile $DBLocation") or die "ERROR: cannot call annovar\n";
+        !system("$callAnnovar -out $annovarInputFile -build $hg $annovarInputFile $DBLocation") or die "ERROR: cannot call annovar\n";
         exit 0;
     }
     for (0.. $#children_pids){
