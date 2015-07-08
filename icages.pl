@@ -138,21 +138,30 @@ sub processArguments {
 	    $logDir = $logDir . "/";
 	}	
     }else{
-	die "ERROR: no such directory for log files\n";
+	if(!($logDir =~ /\/$/)){
+            $logDir = $logDir . "/";
+        }
+	mkdir($logDir) or die "ERROR: no such directory for log files\n";
     }
     if(-d $outputDir){
 	if(!($outputDir =~ /\/$/)){
             $outputDir = $outputDir ."/";
         }
     }else{
-	die "ERROR: no such directory for output files\n";
+	if(!($outputDir =~ /\/$/)){
+            $outputDir = $outputDir ."/";
+        }
+	mkdir($outputDir) or die "ERROR: no such directory for output files\n";
     }
     if(-d $tempDir){
-	if(!($logDir =~ /\/$/)){
-            $logDir = $logDir ."/";
+	if(!($tempDir =~ /\/$/)){
+            $tempDir = $tempDir ."/";
         }
     }else{
-	die "ERROR: no such directory for temp files\n";
+	if(!($tempDir =~ /\/$/)){
+            $tempDir = $tempDir ."/";
+        }
+	mkdir($tempDir) or die "ERROR: no such directory for temp files\n";
     }
 
     ######################## arguments ########################
