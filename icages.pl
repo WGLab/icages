@@ -167,7 +167,7 @@ sub processArguments {
     ######################## arguments ########################
     $help and pod2usage (-verbose=>1, -exitval=>1, -output=>\*STDOUT);
     $manual and pod2usage (-verbose=>2, -exitval=>1, -output=>\*STDOUT);
-    return ($inputDir, $icagesLocation, $tumor, $germline, $id, $subtype , $logDir, $outputDir, $tempDir, $prefix, $bed, $hg19);
+    return ($inputDir, $icagesLocation, $tumor, $germline, $id, $subtype , $logDir, $outputDir, $tempDir, $prefix, $bed, $hg);
 }
 
 ######################################################################################################################################
