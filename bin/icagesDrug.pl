@@ -9,7 +9,7 @@ use Getopt::Long;
 ######################################################## variable declaration ########################################################
 ######################################################################################################################################
 
-my ($rawInputFile, $icagesLocation);
+my ($rawInputFile, $icagesLocation, $prefix);
 my (%biosystem, %neighbors, %activity, %onc, %sup, %icagesGenes);
 my ($biosystemRef, $activityRef, $oncRef, $supRef, $icagesGenesRef, $neighborsRef);
 
@@ -19,17 +19,18 @@ my ($biosystemRef, $activityRef, $oncRef, $supRef, $icagesGenesRef, $neighborsRe
 
 $rawInputFile = $ARGV[0];
 $icagesLocation = $ARGV[1];
+$prefix = $ARGV[2];
 ($biosystemRef, $activityRef, $oncRef, $supRef) = &loadDatabase($icagesLocation);
 %biosystem = %{$biosystemRef};
 %activity = %{$activityRef};
 %onc = %{$oncRef};
 %sup = %{$supRef};
-$icagesGenesRef = &getiCAGES($rawInputFile);
+$icagesGenesRef = &getiCAGES($rawInputFile, $prefix);
 %icagesGenes = %{$icagesGenesRef};
 $neighborsRef = &getNeighbors(\%icagesGenes, \%biosystem);
 %neighbors = %{$neighborsRef};
 &getDrugs ($rawInputFile, $icagesLocation, \%neighbors, \%onc, \%sup);
-&processDrugs($rawInputFile, \%neighbors, \%activity);
+&processDrugs($rawInputFile, \%neighbors, \%activity, $prefix);
 
 ######################################################################################################################################
 ############################################################# subroutines ############################################################
@@ -80,10 +81,11 @@ sub loadDatabase {
 
 sub getiCAGES{
     print "NOTICE: start process gene files from iCAGES layer two\n";
-    my ($rawInputFile, $icagesGenes);
+    my ($rawInputFile, $icagesGenes, $prefix);
     my %icagesGenes;
     $rawInputFile = shift;
-    $icagesGenes = $rawInputFile . ".icagesGenes.csv";
+    $prefix = shift;
+    $icagesGenes = $rawInputFile . $prefix . ".annovar.icagesGenes.csv";
     open(GENES, "$icagesGenes") or die "ERROR: cannot open $icagesGenes\n";
     my $header = <GENES>;
     while(<GENES>){
@@ -165,13 +167,14 @@ sub getDrugs{
 
 sub processDrugs{
     print "NOTICE: start processing drugs from DGIdb\n";
-    my ($rawInputFile, $matchFile, $allDrugs, $icagesDrugs);
+    my ($rawInputFile, $matchFile, $allDrugs, $icagesDrugs, $prefix);
     my (%neighbors, %activity, %icagesDrug, %icagesPrint);
     my ($neighborsRef, $activityRef);
     my ($oncDrugFile, $supDrugFile, $otherDrugFile);
     $rawInputFile = shift;
     $neighborsRef = shift;
     $activityRef = shift;
+    $prefix = shift;
     %neighbors = %{$neighborsRef};
     %activity = %{$activityRef};
     $matchFile = $rawInputFile . ".*.drug";
@@ -179,7 +182,7 @@ sub processDrugs{
     $supDrugFile = $rawInputFile . ".suppressor.drug";
     $otherDrugFile = $rawInputFile . ".other.drug";
     $allDrugs = $rawInputFile . ".drug.all";
-    $icagesDrugs = $rawInputFile . ".icagesDrugs.csv";
+    $icagesDrugs = $rawInputFile . $prefix . ".annovar.icagesDrugs.csv";
     if((-e $oncDrugFile) or (-e $supDrugFile) or (-e $otherDrugFile)){
         !system("cat $matchFile > $allDrugs") or die "ERROR: cannot concatenate drug files\n";
     }else{
