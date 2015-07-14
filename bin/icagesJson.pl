@@ -12,6 +12,7 @@ use JSON;
 
 my $rawInputFile = $ARGV[0];
 my $icagesLocation = $ARGV[1];
+my $prefix = $ARGV[2];
 my ($icagesMutationsRef, $icagesGenesRef, $icagesDrugsRef, $logInformationRef);
 my $json;
 
@@ -19,9 +20,9 @@ my $json;
 ########################################################### main  ####################################################################
 ######################################################################################################################################
 
-($icagesMutationsRef, $icagesGenesRef, $icagesDrugsRef, $logInformationRef) = &loadResult($rawInputFile);
+($icagesMutationsRef, $icagesGenesRef, $icagesDrugsRef, $logInformationRef) = &loadResult($rawInputFile, $prefix);
 $json = &createJson($icagesMutationsRef, $icagesGenesRef, $icagesDrugsRef, $logInformationRef);
-&printJson($rawInputFile, $json);
+&printJson($rawInputFile, $json, $prefix);
 
 ######################################################################################################################################
 ############################################################# subroutines ############################################################
@@ -29,16 +30,17 @@ $json = &createJson($icagesMutationsRef, $icagesGenesRef, $icagesDrugsRef, $logI
 
 sub loadResult {
     print "NOTICE: start loading three output files from iCAGES\n";
-    my ($rawInputFile, $icagesMutationsFile, $icagesGenesFile, $icagesDrugsFile);
+    my ($rawInputFile, $prefix, $icagesMutationsFile, $icagesGenesFile, $icagesDrugsFile);
     my ($icagesMutationsRef, $icagesGenesRef, $icagesDrugsRef);
     my (%icagesMutations, %icagesGenes, %icagesDrugs);
     my ($missenseCount, $noncodingCount, $structuralVariationCount);
     my ($geneCount, $driverCount, $cgcCount, $keggCount, $drugCount);
     my %logInformation;
     $rawInputFile = shift;
-    $icagesMutationsFile = $rawInputFile . ".icagesMutations.csv";
-    $icagesGenesFile = $rawInputFile . ".icagesGenes.csv";
-    $icagesDrugsFile = $rawInputFile . ".icagesDrugs.csv";
+    $prefix = shift;
+    $icagesMutationsFile = $rawInputFile . $prefix. ".annovar.icagesMutations.csv";
+    $icagesGenesFile = $rawInputFile . $prefix. ".annovar.icagesGenes.csv";
+    $icagesDrugsFile = $rawInputFile . $prefix. ".annovar.icagesDrugs.csv";
     ($icagesMutationsRef, $missenseCount, $noncodingCount, $structuralVariationCount) = &loadMutations($icagesMutationsFile);
     ($icagesGenesRef, $geneCount, $driverCount, $cgcCount, $keggCount) = &loadGenes($icagesGenesFile);
     ($icagesDrugsRef, $drugCount) = &loadDrugs($icagesDrugsFile);
@@ -73,10 +75,11 @@ sub createJson {
 }
 
 sub printJson {
-    my ($rawInputFile, $json, $icagesJsonFile);
+    my ($rawInputFile, $json, $prefix, $icagesJsonFile);
     $rawInputFile = shift;
     $json = shift;
-    $icagesJsonFile = $rawInputFile . ".icages.json";
+    $prefix = shift;
+    $icagesJsonFile = $rawInputFile . $prefix . ".icages.json";
     open(OUT, ">$icagesJsonFile") or die ;
     print OUT "$json\n";
     close OUT;

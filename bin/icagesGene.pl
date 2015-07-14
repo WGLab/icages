@@ -9,7 +9,7 @@ use Getopt::Long;
 ######################################################## variable declaration ########################################################
 ######################################################################################################################################
 
-my ($rawInputFile, $icagesLocation, $subtype);
+my ($rawInputFile, $icagesLocation, $subtype, $prefix);
 my %phenolyzer;
 
 ######################################################################################################################################
@@ -19,8 +19,9 @@ my %phenolyzer;
 $rawInputFile = $ARGV[0];
 $icagesLocation = $ARGV[1];
 $subtype = $ARGV[2];
+$prefix = $ARGV[3];
 %phenolyzer = &loadPhenolyzer($icagesLocation);
-&processMutation($rawInputFile, $icagesLocation, \%phenolyzer, $subtype);
+&processMutation($rawInputFile, $icagesLocation, \%phenolyzer, $subtype, $prefix);
 
 
 ######################################################################################################################################
@@ -54,13 +55,14 @@ sub processMutation{
     $icagesLocation = shift;
     $ref = shift;
     $subtype = shift;
+    $prefix = shift;
     %phenolyzer = %{$ref};
     $DBLocation = $icagesLocation . "db/";
     ($cgcRef, $keggRef) = loadDatabase($DBLocation);
     %cgc = %{$cgcRef};
     %kegg = %{$keggRef};
-    $icagesMutations = $rawInputFile . ".icagesMutations.csv";
-    $icagesGenes = $rawInputFile . ".icagesGenes.csv";
+    $icagesMutations = $rawInputFile . $prefix . ".annovar.icagesMutations.csv";
+    $icagesGenes = $rawInputFile . $prefix . ".annovar.icagesGenes.csv";
     open(MUTATIONS, "$icagesMutations") or die "ERROR: cannot open $icagesMutations\n";
     my $header = <MUTATIONS>;
     open(GENES, ">$icagesGenes") or die "ERROR: cannot open $icagesGenes\n";
