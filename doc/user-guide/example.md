@@ -20,7 +20,7 @@ To change prefix, please use option `-p` or `--prefix` and to change directory w
 
 ## ANNOVAR input annotated with hg38
 
-To change prefix, please use option `-p` or `--prefix` and to change directory where your output will be generated, please use option `--outputdir`. Note that if you have other forms of input, such as VCF format and BED format, the syntax is the same.
+To change database version, please use option `--buildver`. Note that if you have other forms of input, such as VCF format and BED format, the syntax is the same.
 
 ```
 [cocodong@biocluster ~/]$ head input.txt 
@@ -34,7 +34,7 @@ To change prefix, please use option `-p` or `--prefix` and to change directory w
 1	216373211	216373211	G	T
 10	37490170	37490170	G	A
 10	56089432	56089432	A	C
-[cocodong@biocluster ~/]$ icages.pl input.txt -p newname --outputdir newoutputdir
+[cocodong@biocluster ~/]$ icages.pl input.txt --buildver hg38
 
 ```
 
@@ -299,4 +299,5 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
 })();
 </script>
 <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
 
