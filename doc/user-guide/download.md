@@ -1,4 +1,4 @@
-# iCAGES main package
+## iCAGES main package
 
 Please join the iCAGES mailing list at google groups [here](https://groups.google.com/forum/?hl=en#!forum/icages) to receive announcements on software updates.
 
@@ -6,13 +6,13 @@ The latest version of iCAGES (2015Feb26) can be downloaded [here](https://github
 
 iCAGES is written in Perl and can be run as a standalone application on diverse hardware systems where standard Perl modules are installed.
 
-# Download
+## Download
 
 ```
 wget https://github.com/WangGenomicsLab/icages/archive/v0.1.0.tar.gz
 ```
 
-# Installation
+## Installation
 
 - Unzip downloaded file
 
@@ -108,7 +108,7 @@ cd vcftools
 make
 ```
 
-# Additional databases
+## Additional databases
 
 Initial databases for iCAGES only includes hg19 reference genome for human. In order to annotate variants with hg18 or hg38 reference genomes, please download these additional databases compiled for these two versions of references.
 
@@ -128,6 +128,8 @@ wget http://icages.usc.edu/download/icages/db_hg38.tar.gz
 tar -zxvf db_hg18.tar.gz
 ```
 
+
+
 ---
 
 <div id="disqus_thread"></div>
@@ -143,6 +145,5 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
 })();
 </script>
 <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
-
 
 
