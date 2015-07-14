@@ -36,12 +36,12 @@ cpanm HTTP::Request
 cpanm LWP
 ```
 
-- Install other dependencies for iCAGES. First, ANNOVAR. Please visit [ANNOVAR](http://www.openbioinformatics.org/annovar/annovar_download.html) website and download it. If your current direcotry is icages-0.1, then please move annovar/ directory to ./bin diretory 
+- Install the first dependency for iCAGES, ANNOVAR. Please visit [ANNOVAR](http://www.openbioinformatics.org/annovar/annovar_download.html) website and download it. If your current direcotry is icages-0.1, then please move annovar/ directory to ./bin diretory 
 ```
 mv path-to-annovar/annovar/ ./bin/
 ```
 
-- DGIdb. If your current directory is icages-0.1, then please create a directory under ./bin directory and name it DGIdb.Please visit [DGIdb](http://dgidb.genome.wustl.edu/) to read about it and download download the corresponding perl script from [here](wget https://raw.github.com/genome/dgi-db/master/files/perl_example.pl) to ./bin/DGIdb directory
+- Install the second dependency for iCAGES, DGIdb. If your current directory is icages-0.1, then please create a directory under ./bin directory and name it DGIdb.Please visit [DGIdb](http://dgidb.genome.wustl.edu/) to read about it and download download the corresponding perl script from [here](wget https://raw.github.com/genome/dgi-db/master/files/perl_example.pl) to ./bin/DGIdb directory
 
 ```
 mkdir ./bin/DGIdb
@@ -92,7 +92,7 @@ print OUT "\n" . 'Unmatched search term: ', $_->{searchTerm}, "\n";
 print OUT 'Possible suggestions: ', join(",", @{$_->{suggestions}}), "\n";
 ```
 
-- vcftools. Asuming you are already in icages-0.1/bin/ directory, download vcftools through sourceforge
+- Install the third dependency for iCAGES, vcftools. Asuming you are already in icages-0.1/bin/ directory, download vcftools through sourceforge
 
 ```
 wget http://iweb.dl.sourceforge.net/project/vcftools/vcftools_0.1.12b.tar.gz
