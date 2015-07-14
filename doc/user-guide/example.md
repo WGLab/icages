@@ -288,6 +288,8 @@ chr2		213000509	213007522
 <script type="text/javascript">
 /* * * CONFIGURATION VARIABLES * * */
 var disqus_shortname = 'icages';
+var disqus_identifier = 'example';
+var disquss_title = 'iCAGES Examples';
 
 /* * * DON'T EDIT BELOW THIS LINE * * */
 (function() {
