@@ -136,6 +136,8 @@ tar -zxvf db_hg18.tar.gz
 <script type="text/javascript">
 /* * * CONFIGURATION VARIABLES * * */
 var disqus_shortname = 'icages';
+var disqus_identifier = 'download';
+var disquss_title = 'iCAGES Download';
 
 /* * * DON'T EDIT BELOW THIS LINE * * */
 (function() {
@@ -145,5 +147,4 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
 })();
 </script>
 <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
-
 

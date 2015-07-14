@@ -78,12 +78,15 @@ chr2		213000509	213007522
 ```
 
 
+
 ---
 
 <div id="disqus_thread"></div>
 <script type="text/javascript">
 /* * * CONFIGURATION VARIABLES * * */
 var disqus_shortname = 'icages';
+var disqus_identifier = 'start';
+var disquss_title = 'iCAGES Start Up Guide';
 
 /* * * DON'T EDIT BELOW THIS LINE * * */
 (function() {
@@ -93,3 +96,4 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
 })();
 </script>
 <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
