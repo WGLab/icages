@@ -1,0 +1,27 @@
+site_name: iCAGES Documentation
+site_url: http://icages.openbioinformatics.org/
+repo_url: http://github.com/WangGenomicsLab/iCAGES/doc/
+repo_name: GitHub
+site_description: Documentation for iCAGES software
+site_author: Coco Dong et. al.
+site_favicon: favicon.ico
+
+docs_dir: .
+include_search: true
+#use_absolute_urls: true
+#use_directory_urls: false
+
+pages:
+- iCAGES: index.md
+- User Guide:
+  - Download and install iCAGES: user-guide/download.md
+  - Quick Start-Up Guide: user-guide/startup.md
+  - Usage: user-guide/usage.md
+  - Examples: user-guide/example.md
+- Misc:
+  - How it works: misc/workflow.md
+  - FAQ: misc/faq.md
+  - What is New: misc/whatsnew.md
+  - Version History: misc/version_history.md
+  - Credit: misc/credit.md
+  - How to Contribute: misc/contributing.md
