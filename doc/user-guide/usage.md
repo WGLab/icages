@@ -35,6 +35,8 @@ icages.pl <input_file> [options]
 <script type="text/javascript">
 /* * * CONFIGURATION VARIABLES * * */
 var disqus_shortname = 'icages';
+var disqus_identifier = 'usage';
+var disquss_title = 'Using iCAGES';
 
 /* * * DON'T EDIT BELOW THIS LINE * * */
 (function() {
