@@ -24,90 +24,90 @@ tar -zxvf db.tar.gz
 ```
 - install necessary packages for perl
     * if you have root access, please use cpanm command to download JSON, HTTP::Request and LWP packages for perl
-        ```
-        cpanm JSON
-        cpanm HTTP::Request
-        cpanm LWP
-        ```
+```
+cpanm JSON
+cpanm HTTP::Request
+cpanm LWP
+```
 - install other dependencies for iCAGES 
     * ANNOVAR
         * please visit [ANNOVAR](http://www.openbioinformatics.org/annovar/annovar_download.html) website and download it
         * if your current direcotry is icages-0.1, then please move annovar/ directory to ./bin diretory 
-            ```
-            mv path-to-annovar/annovar/ ./bin/
-            ```
+```
+mv path-to-annovar/annovar/ ./bin/
+```
     * download DGIdb
         * if your current directory is icages-0.1, then please create a directory under ./bin directory and name it DGIdb
         * please visit [DGIdb](http://dgidb.genome.wustl.edu/) to read about it and download download the corresponding perl script from [here](wget https://raw.github.com/genome/dgi-db/master/files/perl_example.pl) to ./bin/DGIdb directory
-            ```
-            mkdir ./bin/DGIdb
-            wget https://raw.github.com/genome/dgi-db/master/files/perl_example.pl -O ./bin/DGIdb/get_DrugList.pl
-            ```
+```
+mkdir ./bin/DGIdb
+wget https://raw.github.com/genome/dgi-db/master/files/perl_example.pl -O ./bin/DGIdb/get_DrugList.pl
+```
     * please make some modifications of this get_DrugList.pl file
         * add this following line after "parse_opts();" 
-            ``` 
-            open (OUT, ">$output") or die "iCAGES: cannot open file $output for writing the drugs recommended for           cancer driver genes\n";
-            ```
+``` 
+open (OUT, ">$output") or die "iCAGES: cannot open file $output for writing the drugs recommended for           cancer driver genes\n";
+```
         * add this following line after "'help'                  => \$help,"
-            ```
-            'output:s'              => \$output 
-            ```
+```
+'output:s'              => \$output 
+```
         * comment out this following line 
-            ```
-            print "gene_name\tdrug_name\tinteraction_type\tsource\tgene_categories\n";
-            ```
-            into
-            ```
-            # print "gene_name\tdrug_name\tinteraction_type\tsource\tgene_categories\n";
-            ```
+```
+print "gene_name\tdrug_name\tinteraction_type\tsource\tgene_categories\n";
+```
+into
+```
+# print "gene_name\tdrug_name\tinteraction_type\tsource\tgene_categories\n";
+```
         * change this following line
-            ```
-            print "$gene_name\t$drug_name\t$interaction_type\t$source\t$gene_categories\n"; 
-            ```
-            into
-            ```
-            print OUT "$gene_name\t$drug_name\t$interaction_type\t$source\t$gene_categories\n"; 
-            ```
+```
+print "$gene_name\t$drug_name\t$interaction_type\t$source\t$gene_categories\n"; 
+```
+into
+```
+print OUT "$gene_name\t$drug_name\t$interaction_type\t$source\t$gene_categories\n"; 
+```
         * change this following lines
-            ```
-            print "\n" . 'Unmatched search term: ', $_->{searchTerm}, "\n";
-            print 'Possible suggestions: ', join(",", @{$_->{suggestions}}), "\n";
-            ```
-            into 
-            ```
-            print OUT "\n" . 'Unmatched search term: ', $_->{searchTerm}, "\n";
-            print OUT 'Possible suggestions: ', join(",", @{$_->{suggestions}}), "\n";
-            ```
+```
+print "\n" . 'Unmatched search term: ', $_->{searchTerm}, "\n";
+print 'Possible suggestions: ', join(",", @{$_->{suggestions}}), "\n";
+```
+into 
+```
+print OUT "\n" . 'Unmatched search term: ', $_->{searchTerm}, "\n";
+print OUT 'Possible suggestions: ', join(",", @{$_->{suggestions}}), "\n";
+```
         * vcftools
         * assuming you are already in icages-0.1/bin/ directory, download vcftools through sourceforge
-            ```
-            wget http://iweb.dl.sourceforge.net/project/vcftools/vcftools_0.1.12b.tar.gz
-            tar -zxvf vcftools_0.1.12b.tar.gz 
-            mv vcftools_0.1.12b/ vcftools/
-            rm vcftools_0.1.12b.tar.gz
-            ```
+```
+wget http://iweb.dl.sourceforge.net/project/vcftools/vcftools_0.1.12b.tar.gz
+tar -zxvf vcftools_0.1.12b.tar.gz 
+mv vcftools_0.1.12b/ vcftools/
+rm vcftools_0.1.12b.tar.gz
+```
         * install vcftools
-            ```
-            cd vcftools
-            make
-            ```
+```
+cd vcftools
+make
+```
 
 ## Additional databases
 
 Initial databases for iCAGES only includes hg19 reference genome for human. In order to annotate variants with hg18 or hg38 reference genomes, please download these additional databases compiled for these two versions of references.
 
 - hg18
-    ```
-    cd icages-0.1/db/
-    wget http://icages.usc.edu/download/icages/db_hg18.tar.gz
-    tar -zxvf db_hg18.tar.gz
-    ```
+```
+cd icages-0.1/db/
+wget http://icages.usc.edu/download/icages/db_hg18.tar.gz
+tar -zxvf db_hg18.tar.gz
+```
 
 - hg38
-    ```
-    cd icages-0.1/db/
-    wget http://icages.usc.edu/download/icages/db_hg38.tar.gz
-    tar -zxvf db_hg18.tar.gz
-    ```
+```
+cd icages-0.1/db/
+wget http://icages.usc.edu/download/icages/db_hg38.tar.gz
+tar -zxvf db_hg18.tar.gz
+```
 
 
