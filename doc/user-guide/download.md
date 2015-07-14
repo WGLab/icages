@@ -128,6 +128,7 @@ wget http://icages.usc.edu/download/icages/db_hg38.tar.gz
 tar -zxvf db_hg18.tar.gz
 ```
 
+---
 
 <div id="disqus_thread"></div>
 <script type="text/javascript">
