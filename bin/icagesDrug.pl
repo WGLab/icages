@@ -29,7 +29,7 @@ $icagesGenesRef = &getiCAGES($rawInputFile, $prefix);
 %icagesGenes = %{$icagesGenesRef};
 $neighborsRef = &getNeighbors(\%icagesGenes, \%biosystem);
 %neighbors = %{$neighborsRef};
-&getDrugs ($rawInputFile, $icagesLocation, \%neighbors, \%onc, \%sup);
+&getDrugs ($rawInputFile, $icagesLocation, \%neighbors, \%onc, \%sup, $prefix);
 &processDrugs($rawInputFile, \%neighbors, \%activity, $prefix);
 
 ######################################################################################################################################
@@ -127,20 +127,21 @@ sub getDrugs{
     my ($neighborsRef, $oncRef, $supRef);
     my (@seeds, @onc, @sup, @other);
     my ($onc, $sup, $other);
-    my ($rawInputFile, $supFile, $oncFile, $otherFile, $icagesLocation, $callDgidb);
+    my ($rawInputFile, $supFile, $oncFile, $otherFile, $icagesLocation, $callDgidb, $prefix);
     $rawInputFile = shift;
     $icagesLocation = shift;
     $neighborsRef = shift;
     $oncRef = shift;
     $supRef = shift;
+    $prefix = shift;
     %neighbors = %{$neighborsRef};
     %onc = %{$oncRef};
     %sup = %{$supRef};
     @seeds = keys %neighbors;
     $callDgidb = $icagesLocation . "bin/DGIdb/getDrugList.pl";
-    $supFile = $rawInputFile . ".suppressor.drug";
-    $oncFile = $rawInputFile . ".oncogene.drug";
-    $otherFile = $rawInputFile . ".other.drug";
+    $supFile = $rawInputFile . $prefix . ".suppressor.drug";
+    $oncFile = $rawInputFile . $prefix.".oncogene.drug";
+    $otherFile = $rawInputFile . $prefix. ".other.drug";
     for(0..$#seeds){
         if(exists $sup{$seeds[$_]}){
             push @sup, $seeds[$_];
@@ -177,11 +178,11 @@ sub processDrugs{
     $prefix = shift;
     %neighbors = %{$neighborsRef};
     %activity = %{$activityRef};
-    $matchFile = $rawInputFile . ".*.drug";
-    $oncDrugFile = $rawInputFile . ".oncogene.drug";
-    $supDrugFile = $rawInputFile . ".suppressor.drug";
-    $otherDrugFile = $rawInputFile . ".other.drug";
-    $allDrugs = $rawInputFile . ".drug.all";
+    $matchFile = $rawInputFile . $prefix . ".*.drug";
+    $oncDrugFile = $rawInputFile . $prefix . ".oncogene.drug";
+    $supDrugFile = $rawInputFile . $prefix . ".suppressor.drug";
+    $otherDrugFile = $rawInputFile . $prefix. ".other.drug";
+    $allDrugs = $rawInputFile . $prefix . ".drug.all";
     $icagesDrugs = $rawInputFile . $prefix . ".annovar.icagesDrugs.csv";
     if((-e $oncDrugFile) or (-e $supDrugFile) or (-e $otherDrugFile)){
         !system("cat $matchFile > $allDrugs") or die "ERROR: cannot concatenate drug files\n";
