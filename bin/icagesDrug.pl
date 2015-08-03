@@ -143,24 +143,26 @@ sub getDrugs{
     $oncFile = $rawInputFile . $prefix.".oncogene.drug";
     $otherFile = $rawInputFile . $prefix. ".other.drug";
     for(0..$#seeds){
-        if(exists $sup{$seeds[$_]}){
+        if(exists $sup{$seeds[$_]} and $seeds[$_] =~ /[a-zA-Z0-9]+/){
             push @sup, $seeds[$_];
-        }elsif(exists $onc{$seeds[$_]}){
+        }elsif(exists $onc{$seeds[$_]} and $seeds[$_] =~ /[a-zA-Z0-9]+/){
             push @onc, $seeds[$_];
         }else{
-            push @other, $seeds[$_];
+	    if($seeds[$_] =~ /[a-zA-Z0-9]+/){
+		push @other, $seeds[$_];
+	    }
         }
     }
     $sup = join(",", @sup);
     $onc = join(",", @onc);
     $other = join(",", @other);
-    if($sup ne ""){
+    if($sup ne "" and $#sup > 0){
         !system("$callDgidb --genes='$sup' --interaction_type='activator,other/unknown,n/a,inducer,stimulator' --source_trust_levels='Expert curated' --output='$supFile'") or die "ERROR: cannot get drugs\n";
     }
-    if($onc ne ""){
+    if($onc ne "" and $#onc >0){
         !system("$callDgidb --genes='$onc' --interaction_type='inhibitor,suppressor,antibody,antagonist,blocker,other/unknown,n/a' --source_trust_levels='Expert curated' --output='$oncFile'") or die "ERROR: cannot get drugs\n";
     }
-    if($other ne ""){
+    if($other ne "" and $#other >0){
         !system("$callDgidb --genes='$other' --interaction_type='inhibitor,suppressor,antibody,antagonist,blocker,activator,other/unknown,n/a,inducer,stimulator' --source_trust_levels='Expert curated' --output='$otherFile'") or die "ERROR: cannot get drugs\n";
     }
 }
