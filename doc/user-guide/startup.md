@@ -1,3 +1,7 @@
+## Important notice
+
+As iCAGES depends on modules to call web API of DGIdb, please make sure that your PC/Mac is connected to the Internet. Thanks!
+
 ## ANNOVAR input 
 
 For beginners, the easiest way to use iCAGES is to annotate somatic mutations in [ANNOVAR](http://annovar.openbioinformatics.org/) input format with reference genome version hg19. This exemplary input file is provided in iCAGES package.
