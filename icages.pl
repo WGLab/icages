@@ -125,13 +125,21 @@ sub processArguments {
 	$hg = "hg19";
     }
     if(!$logDir){
-	$logDir = $inputDir;
+	if(!$outputDir){
+	    $logDir = $inputDir;
+	}else{
+	    $logDir = $outputDir;
+	}
     }
     if(!$outputDir){
 	$outputDir = $inputDir;
     }
     if(!$tempDir){
-	$tempDir = $inputDir;
+	if(!$outputDir){
+	    $tempDir = $inputDir;
+	}else{
+	    $tempDir = $outputDir;
+	}
     }
     if(-d $logDir){
         if(!($logDir =~ /\/$/)){
