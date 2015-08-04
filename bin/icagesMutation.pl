@@ -27,7 +27,7 @@ $bed = $ARGV[7];
 $hg = $ARGV[8];
 $nowString = localtime();
 $annovarInputFile = &runAnnovar($rawInputFile, $inputDir ,$icagesLocation ,$tumor ,$germline ,$id, $prefix, $bed, $hg );
-&processAnnovar($annovarInputFile);
+&processAnnovar($annovarInputFile, $hg);
 
 ######################################################################################################################################
 ############################################################# subroutines ############################################################
@@ -66,11 +66,12 @@ sub runAnnovar {
 sub processAnnovar{
     print "NOTICE: start processing output from ANNOVAR\n";
     my $annovarInputFile = shift;
+    my $hg = shift;
     my $annovarVariantFunction = $annovarInputFile . ".variant_function";
     my $annovarExonVariantFunction = $annovarInputFile . ".exonic_variant_function";
-    my $annovarRadialSVM = $annovarInputFile . ".snp.hg19_iCAGES_dropped";
-    my $annovarCNV = $annovarInputFile . ".cnv.hg19_cnv";
-    my $annovarFunseq2 = $annovarInputFile . ".snp.hg19_funseq2_dropped";
+    my $annovarRadialSVM = $annovarInputFile . ".snp." . $hg . "_iCAGES_dropped";
+    my $annovarCNV = $annovarInputFile . ".cnv." . $hg . "_cnv";
+    my $annovarFunseq2 = $annovarInputFile . ".snp." . $hg . "_funseq2_dropped";
     my $icagesMutations = $annovarInputFile . ".icagesMutations.csv";
     open(GENE, "$annovarVariantFunction") or die "ERROR: cannot open file $annovarVariantFunction\n";
     open(EXON, "$annovarExonVariantFunction") or die "ERROR: cannot open file $annovarExonVariantFunction\n";
@@ -225,7 +226,7 @@ sub formatConvert{
 	my $line = $_;
         my @line = split;
 	if($line[0] =~ /^#CHROM/){
-	    if($#line > 8){
+	    if($#line > 9){
 		$multipleSampleCheck = 1;
 	    }
 	    last;

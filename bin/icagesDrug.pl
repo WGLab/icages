@@ -189,7 +189,7 @@ sub processDrugs{
     if((-e $oncDrugFile) or (-e $supDrugFile) or (-e $otherDrugFile)){
         !system("cat $matchFile > $allDrugs") or die "ERROR: cannot concatenate drug files\n";
     }else{
-        !system("cat $matchFile > $allDrugs") or die "ERROR: cannot concatenate drug files\n";
+        !system("touch $allDrugs") or die "ERROR: cannot concatenate drug files\n";
     }
     open(DRUG, "$allDrugs") or die "ERROR: cannot open drug file $allDrugs\n";
     open(OUT, ">$icagesDrugs") or die "ERROR: cannot open $icagesDrugs\n";
