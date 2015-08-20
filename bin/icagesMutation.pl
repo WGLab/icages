@@ -230,8 +230,12 @@ sub formatConvert{
 		$multipleSampleCheck = 1;
 	    }
 	    last;
-	}elsif($#line == 2 or $line[3] !~ /[a|t|c|g|A|T|C|G|-]+/ or $line[4] !~ /[a|t|c|g|A|T|C|G|-]+/){
+	}elsif($#line == 2 ){
 	    $isbedFormat  = 1;
+	}elsif($#line != 2 and defined  $line[3]  and defined $line[4] ){
+		if($line[3] !~ /[a|t|c|g|A|T|C|G|-]+/ or $line[4] !~ /[a|t|c|g|A|T|C|G|-]+/){
+		    $isbedFormat  = 1;
+		}
 	}
     }
     close IN;
