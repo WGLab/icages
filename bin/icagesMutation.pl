@@ -196,7 +196,7 @@ sub processAnnovar{
                 }
             }
         }else{
-            $cnvCount ++
+            $cnvCount ++ ;
             $category = "structural variation";
             if(exists $exon{$key}{"mutationSyntax"} and exists $exon{$key}{"proteinSyntax"}){
                 $mutationSyntax = $exon{$key}{"mutationSyntax"};
