@@ -188,7 +188,7 @@ sub processMutation{
         print GENES "$icagesPrint{$gene}{\"content\"}\n";
     }
     
-    my $logFile = $annovarInputFile . ".icages.log";
+    my $logFile = $rawInputFile . $prefix  . ".icages.log";
     open(LOG, ">>$logFile") or die "iCAGES: cannot open file $logFile\n";
     
     print LOG "########### iCAGES Gene Summary ###########\n";
