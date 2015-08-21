@@ -82,6 +82,19 @@ sub processAnnovar{
     my (%radialSVM, %funseq, %cnv, %exon);
     my (%pointcoding);
     my %icagesMutations;
+    
+    ######## count location information
+    my $exonCount = 0;
+    my $intronCount = 0;
+    my $noncodingRNACount = 0;
+    my $intergenicCount = 0;
+    my $otherCount = 0;
+    
+    ######## count annotation information
+    my $radialSVMCount = 0;
+    my $funseqCount = 0;
+    my $cnvCount = 0;
+    
     while(<RADIAL>){
         chomp;
         my @line;
@@ -139,12 +152,7 @@ sub processAnnovar{
         $key = "$line[2],$line[3],$line[4],$line[5],$line[6]";
         next unless defined $key;
         
-        ######## count location information
-        my $exonCount = 0;
-        my $intronCount = 0;
-        my $noncodingRNACount = 0;
-        my $intergenicCount = 0;
-        my $otherCount = 0;
+
         
         if($line[0] =~ /^exonic/ || $line[0] =~ /^splicing/ ){
             $exonCount ++;
@@ -158,10 +166,7 @@ sub processAnnovar{
             $otherCount ++;
         }
         
-        ######## count annotation information
-        my $radialSVMCount = 0;
-        my $funseqCount = 0;
-        my $cnvCount = 0;
+
         
         if ($line[3] == $line[4]){
             if(exists $pointcoding{$key}){
