@@ -246,7 +246,7 @@ sub processDrugs{
     close OUT;
     close DRUG;
     
-    my $logFile = $rawInputFile . $prefix . ".icages.log";
+    my $logFile = $rawInputFile . $prefix . ".annovar.icages.log";
     open(LOG, ">>$logFile") or die "iCAGES: cannot open file $logFile\n";
     print LOG "########### iCAGES Drug Summary ###########\n";
     print LOG "## basic information\n";
