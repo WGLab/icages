@@ -152,6 +152,28 @@ sub processAnnovar{
         $key = "$line[2],$line[3],$line[4],$line[5],$line[6]";
         next unless defined $key;
         
+        ####### process gene for noncoding variants
+        
+        if($gene =~ /(.*?)\(dist=(.*?)\),(.*?)\(dist=(.*?)\)/){
+            my $gene1 = $1;
+            my $gene2 = $3;
+            my $dist1 = $2;
+            my $dist2 = $4;
+            if($dist1 <= $dist2){
+                $gene = $gene1;
+            }else{
+                $gene = $gene2;
+            }
+        }elsif($gene =~ /(.*)\(.*\),(.*)\(.*\)$/){
+            $gene = $1;
+        }elsif($gene =~ /(.*)\(.*\);(.*)\(.*\)$/){
+            $gene = $1;
+        }elsif($gene =~ /(.*?)\(.*\)$/){
+            $gene = $1;
+        }elsif($gene =~ /;/ or $gene =~ /,/){
+            my @gene = split(/;|,/, $gene);
+            $gene = $gene[0];
+        }    
 
         
         if($line[0] =~ /^exonic/ || $line[0] =~ /^splicing/ ){
