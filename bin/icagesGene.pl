@@ -79,7 +79,15 @@ sub processMutation{
             $icagesGenes{$line[0]}{$line[9]} = $line[10];
         };
     };
+    
+    ####### count genes
+    my $geneCount = 0;
+    my $cgcCount = 0;
+    my $keggCount = 0;
+    
+
     foreach my $gene (sort keys %icagesGenes){
+        $geneCount ++;
         my ($radialSVM, $funseq, $cnv, $phenolyzer, $icagesGene, $category);
         if (exists $icagesGenes{$gene}{"radial SVM"} and $icagesGenes{$gene}{"radial SVM"} ne "NA"){
             $radialSVM = $icagesGenes{$gene}{"radial SVM"};
@@ -102,8 +110,10 @@ sub processMutation{
             $phenolyzer = 0;
         };
         if (exists $cgc{$gene}){
+            $cgcCount ++;
             $category = "Cancer Gene Census";
         }elsif(exists $kegg{$gene}){
+            $keggCount ++;
             $category = "KEGG Cancer Pathway";
         }else{
             $category = "Other Category";
@@ -177,6 +187,16 @@ sub processMutation{
     foreach my $gene (sort {$icagesPrint{$b}{"score"} <=> $icagesPrint{$a}{"score"}} keys %icagesPrint){
         print GENES "$icagesPrint{$gene}{\"content\"}\n";
     }
+    
+    my $logFile = $annovarInputFile . ".icages.log";
+    open(LOG, ">>$logFile") or die "iCAGES: cannot open file $logFile\n";
+    
+    print LOG "########### iCAGES Gene Summary ###########\n";
+    print LOG "## basic information\n";
+    print LOG "Total: $geneCount\n";
+    print LOG "Cancer Gene Census Gene: $cgcCount\n";
+    print LOG "KEGG Pathway Gene: $keggCount\n\n";
+    
 }
 
 

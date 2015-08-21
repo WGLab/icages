@@ -15,6 +15,8 @@ my $icagesLocation = $ARGV[1];
 my $prefix = $ARGV[2];
 my ($icagesMutationsRef, $icagesGenesRef, $icagesDrugsRef, $logInformationRef);
 my $json;
+my $nowString;
+$nowString = localtime();
 
 ######################################################################################################################################
 ########################################################### main  ####################################################################
@@ -83,6 +85,7 @@ sub printJson {
     open(OUT, ">$icagesJsonFile") or die ;
     print OUT "$json\n";
     close OUT;
+    print "NOTICE: end runing iCAGES packge at $nowString\n";
 }
 
 sub loadMutations {

@@ -223,7 +223,12 @@ sub processDrugs{
             $index ++;
         }
     }
+    
+    ##### count drug
+    my $drugCount = 0;
+    my $gooddrugCount = 0;
     foreach my $drug (sort keys %icagesDrug){
+
         foreach my $neighbor (sort keys %{$icagesDrug{$drug}}){
             foreach my $final (sort keys %{$icagesDrug{$drug}{$neighbor}}){
                 my $icagesDrug = $icagesDrug{$drug}{$neighbor}{$final}{"biosystem"} * $icagesDrug{$drug}{$neighbor}{$final}{"icages"} * $icagesDrug{$drug}{$neighbor}{$final}{"activity"};
@@ -234,10 +239,19 @@ sub processDrugs{
     }
     print OUT "drugName,finalTarget,directTarget,iCAGESGeneScore,maxBioSystemsScore,maxActivityScore,icagesDrugScore\n";
     foreach my $drug (sort {$icagesPrint{$b}{"score"} <=> $icagesPrint{$a}{"score"}} keys %icagesPrint){
+        $drugCount ++;
+        $gooddrugCount ++ if $icagesPrint{$drug}{"score"} > 0.5;
         print OUT "$icagesPrint{$drug}{\"content\"}\n";
     }
     close OUT;
     close DRUG;
+    
+    my $logFile = $rawInputFile . $prefix . ".icages.log";
+    open(LOG, ">>$logFile") or die "iCAGES: cannot open file $logFile\n";
+    print LOG "########### iCAGES Drug Summary ###########\n";
+    print LOG "## basic information\n";
+    print LOG "Total: $drugCount\n";
+    print LOG "Good drug (iCAGES drug score >= 0.5): $gooddrugCount\n";
 }
 
 
