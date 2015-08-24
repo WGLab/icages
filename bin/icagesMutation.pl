@@ -82,6 +82,19 @@ sub processAnnovar{
     my (%radialSVM, %funseq, %cnv, %exon);
     my (%pointcoding);
     my %icagesMutations;
+    
+    ######## count location information
+    my $exonCount = 0;
+    my $intronCount = 0;
+    my $noncodingRNACount = 0;
+    my $intergenicCount = 0;
+    my $otherCount = 0;
+    
+    ######## count annotation information
+    my $radialSVMCount = 0;
+    my $funseqCount = 0;
+    my $cnvCount = 0;
+    
     while(<RADIAL>){
         chomp;
         my @line;
@@ -110,6 +123,8 @@ sub processAnnovar{
         $key = "$line[2],$line[3],$line[4],$line[5],$line[6]";
         $cnv{$key} = $score;
     }
+    
+    
     while(<EXON>){
         chomp;
         my (@line, @syntax, @content);
@@ -136,8 +151,48 @@ sub processAnnovar{
         next unless defined $gene;
         $key = "$line[2],$line[3],$line[4],$line[5],$line[6]";
         next unless defined $key;
+        
+        ####### process gene for noncoding variants
+        
+        if($gene =~ /(.*?)\(dist=(.*?)\),(.*?)\(dist=(.*?)\)/){
+            my $gene1 = $1;
+            my $gene2 = $3;
+            my $dist1 = $2;
+            my $dist2 = $4;
+            if($dist1 <= $dist2){
+                $gene = $gene1;
+            }else{
+                $gene = $gene2;
+            }
+        }elsif($gene =~ /(.*)\(.*\),(.*)\(.*\)$/){
+            $gene = $1;
+        }elsif($gene =~ /(.*)\(.*\);(.*)\(.*\)$/){
+            $gene = $1;
+        }elsif($gene =~ /(.*?)\(.*\)$/){
+            $gene = $1;
+        }elsif($gene =~ /;/ or $gene =~ /,/){
+            my @gene = split(/;|,/, $gene);
+            $gene = $gene[0];
+        }    
+
+        
+        if($line[0] =~ /^exonic/ || $line[0] =~ /^splicing/ ){
+            $exonCount ++;
+        }elsif($line[0] =~ /^intron/){
+            $intronCount ++;
+        }elsif($line[0] =~ /^ncRNA/){
+            $noncodingRNACount ++;
+        }elsif($line[0] =~ /^intergenic/){
+            $intergenicCount ++;
+        }else{
+            $otherCount ++;
+        }
+        
+
+        
         if ($line[3] == $line[4]){
             if(exists $pointcoding{$key}){
+                $radialSVMCount ++;
                 $category = "point coding";
                 if(defined $exon{$key}{"mutationSyntax"}){
                     $mutationSyntax = $exon{$key}{"mutationSyntax"};
@@ -156,6 +211,7 @@ sub processAnnovar{
                     $score = "NA";
                 }
             }else{
+                $funseqCount ++;
                 $category = "point noncoding";
                 $mutationSyntax = "NA";
                 $proteinSyntax = "NA";
@@ -167,6 +223,7 @@ sub processAnnovar{
                 }
             }
         }else{
+            $cnvCount ++ ;
             $category = "structural variation";
             if(exists $exon{$key}{"mutationSyntax"} and exists $exon{$key}{"proteinSyntax"}){
                 $mutationSyntax = $exon{$key}{"mutationSyntax"};
@@ -198,6 +255,21 @@ sub processAnnovar{
             }
         }
     }
+    
+    my $logFile = $annovarInputFile . ".icages.log";
+    open(LOG, ">>$logFile") or die "iCAGES: cannot open file $logFile\n";
+    
+    print LOG "## location information\n";
+    print LOG "exonic/splice: $exonCount\n";
+    print LOG "intronic: $intronCount\n";
+    print LOG "noncoding RNA: $noncodingRNACount\n";
+    print LOG "intergenic: $intergenicCount\n";
+    print LOG "other: $otherCount\n\n";
+    
+    print LOG "## annotation information\n";
+    print LOG "point coding variants with radialSVM annotation: $radialSVMCount\n";
+    print LOG "point noncoding variants with FunSeq2 annotation: $funseqCount\n";
+    print LOG "Indels and SVs with CNV signal annotation: $cnvCount\n\n";
 }
 
 
@@ -230,8 +302,12 @@ sub formatConvert{
 		$multipleSampleCheck = 1;
 	    }
 	    last;
-	}elsif($#line == 2 or $line[3] !~ /[a|t|c|g|A|T|C|G|-]+/ or $line[4] !~ /[a|t|c|g|A|T|C|G|-]+/){
+	}elsif($#line == 2 ){
 	    $isbedFormat  = 1;
+	}elsif($#line != 2 and defined  $line[3]  and defined $line[4] ){
+		if($line[3] !~ /[a|t|c|g|A|T|C|G|-]+/ or $line[4] !~ /[a|t|c|g|A|T|C|G|-]+/){
+		    $isbedFormat  = 1;
+		}
 	}
     }
     close IN;
@@ -285,22 +361,40 @@ sub divideMutation{
     $annovarInputFile = shift;
     $snpFile = $annovarInputFile . ".snp";
     $cnvFile = $annovarInputFile . ".cnv";
+    
     open(OUT, "$annovarInputFile") or die "iCAGES: cannot open input file $annovarInputFile\n";
     open(SNP, ">$snpFile") or die "iCAGES: cannot open input file $snpFile\n";
     open(CNV, ">$cnvFile") or die "iCAGES: cannot open input file $cnvFile\n";
+    
+    #### add variant information into log file
+    my $logFile = $annovarInputFile . ".icages.log";
+    open(LOG, ">$logFile") or die "iCAGES: cannot open file $logFile\n";
+    my $variantCount = 0;
+    my $snvCount = 0;
+    my $cnvCount = 0;
+    
     while(<OUT>){
         chomp;
+        $variantCount ++;
         my $printLine = $_;
         my @line = split(/\t/, $_);
         if ($line[1] == $line[2] and $line[3] ne "-" and $line[4] ne "-"){
+            $snvCount ++;
             print SNP "$printLine\n";
         }else{
+            $cnvCount ++;
             print CNV "$printLine\n";
         }
     }
     close OUT;
     close SNP;
     close CNV;
+    
+    print LOG "########### iCAGES Variant Summary ###########\n";
+    print LOG "## basic information\n";
+    print LOG "Total: $variantCount\n";
+    print LOG "SNVs: $snvCount\n";
+    print LOG "Indels and Structural variants: $cnvCount\n\n";
 
 }
 
