@@ -119,7 +119,8 @@ sub loadMutations {
         my $mutationSyntax = $line[7];
         my $proteinSyntax = $line[8];
         my $scoreCategory = $line[9];
-        my $mutationScore = $line[10];
+        my $mutationScore = $line[10] eq "NA" ? "NA" : sprintf("%.2f", $line[10]);
+	
         my %anonymousHash = ("Chromosome" => $chrmosomeNumber, "Start_position" => $start, "End_position" => $end, "Reference_allele" => $reference, "Alternative_allele" => $alternative, "Mutation_syntax" => $mutationSyntax, "Protein_syntax" => $proteinSyntax, "Mutation_category" => $category, "Score_category" => $scoreCategory, "Driver_mutation_score" => $mutationScore);
         push @{$icagesMutations{$geneName}}, \%anonymousHash;
     }
@@ -150,8 +151,8 @@ sub loadGenes {
         my @line = split(",", $_);
         my $geneName = $line[0];
         my $category = $line[1];
-        my $phenolyzer = $line[5];
-        my $icagesGeneScore = $line[6];
+	my $phenolyzer = $line[5] eq "NA" ? "NA" : sprintf("%.2f", $line[5]);
+	my $icagesGeneScore = $line[6] eq "NA" ? "NA" : sprintf("%.2f", $line[6]);
         my $url;
         if ($category eq "Cancer Gene Census"){
             $cgcCount ++;
@@ -198,9 +199,9 @@ sub loadDrugs {
         my $drugName = $line[0];
         my $finalTarget = $line[1];
         my $directTarget = $line[2];
-        my $maxBioSystemsScore = $line[4];
-        my $maxActivityScore = $line[5];
-        my $icagesDrugScore = $line[6];
+	my $maxBioSystemsScore = $line[4] eq "NA" ? "NA" : sprintf("%.2f", $line[4]);
+	my $maxActivityScore = $line[5] eq "NA" ? "NA" : sprintf("%.2f", $line[5]);
+	my $icagesDrugScore = $line[6] eq "NA" ? "NA" : sprintf("%.2f", $line[6]);
         my %anonymousHash = ("Drug_name" => $drugName, "Final_target_gene" => $finalTarget, "Direct_target_gene" => $directTarget, "BioSystems_probability" => $maxBioSystemsScore, "PubChem_active_probability" => $maxActivityScore, "iCAGES_drug_score" => $icagesDrugScore);
         push @{$icagesDrugs{$finalTarget}}, \%anonymousHash;
     }
