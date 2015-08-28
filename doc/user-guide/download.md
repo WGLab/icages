@@ -9,7 +9,7 @@ iCAGES is written in Perl and can be run as a standalone application on diverse 
 ## Download
 
 ```
-wget https://github.com/WangGenomicsLab/icages/archive/v0.1.0.tar.gz
+wget https://github.com/WangGenomicsLab/icages/archive/(version).tar.gz
 ```
 
 ## Installation
@@ -23,7 +23,7 @@ tar -zxvf v0.1.tar.gz
 - Download and unzip database files
 
 ```
-cd icages-0.1/
+cd icages-(version)/
 wget http://icages.usc.edu/download/icages/db.tar.gz
 tar -zxvf db.tar.gz
 ```
@@ -92,7 +92,7 @@ print OUT "\n" . 'Unmatched search term: ', $_->{searchTerm}, "\n";
 print OUT 'Possible suggestions: ', join(",", @{$_->{suggestions}}), "\n";
 ```
 
-- Install the third dependency for iCAGES, vcftools. Asuming you are already in icages-0.1/bin/ directory, download vcftools through sourceforge
+- Install the third dependency for iCAGES, vcftools. Asuming you are already in icages-(version)/bin/ directory, download vcftools through sourceforge
 
 ```
 wget http://iweb.dl.sourceforge.net/project/vcftools/vcftools_0.1.12b.tar.gz
@@ -115,7 +115,7 @@ Initial databases for iCAGES only includes hg19 reference genome for human. In o
 - hg18
 
 ```
-cd icages-0.1/db/
+cd icages-(version)/db/
 wget http://icages.usc.edu/download/icages/db_hg18.tar.gz
 tar -zxvf db_hg18.tar.gz
 ```
@@ -123,7 +123,7 @@ tar -zxvf db_hg18.tar.gz
 - hg38
 
 ```
-cd icages-0.1/db/
+cd icages-(version)/db/
 wget http://icages.usc.edu/download/icages/db_hg38.tar.gz
 tar -zxvf db_hg18.tar.gz
 ```
