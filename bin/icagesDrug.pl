@@ -156,14 +156,21 @@ sub getDrugs{
     $sup = join(",", @sup);
     $onc = join(",", @onc);
     $other = join(",", @other);
+
+
+    
     if($sup ne "" and $#sup > 0){
+	print "sup:$sup\n";
         !system("$callDgidb --genes='$sup' --interaction_type='activator,other/unknown,n/a,inducer,stimulator' --source_trust_levels='Expert curated' --output='$supFile'") or die "ERROR: cannot get drugs\n";
     }
     if($onc ne "" and $#onc >0){
+        print "onc:$onc\n";
         !system("$callDgidb --genes='$onc' --interaction_type='inhibitor,suppressor,antibody,antagonist,blocker,other/unknown,n/a' --source_trust_levels='Expert curated' --output='$oncFile'") or die "ERROR: cannot get drugs\n";
     }
     if($other ne "" and $#other >0){
-        !system("$callDgidb --genes='$other' --interaction_type='inhibitor,suppressor,antibody,antagonist,blocker,activator,other/unknown,n/a,inducer,stimulator' --source_trust_levels='Expert curated' --output='$otherFile'") or die "ERROR: cannot get drugs\n";
+	print "other:$other\n";
+	print "$callDgidb --genes='$other' --interaction_type='inhibitor,suppressor,antibody,antagonist,blocker,activator,other/unknown,n/a,inducer,stimulator' --source_trust_levels='Expert curated' --output='$otherFile'";
+	!system("$callDgidb --genes='$other' --interaction_type='inhibitor,suppressor,antibody,antagonist,blocker,activator,other/unknown,n/a,inducer,stimulator' --source_trust_levels='Expert curated' --output='$otherFile'") or die "ERROR: cannot get drugs\n";
     }
 }
 
@@ -187,7 +194,7 @@ sub processDrugs{
     $allDrugs = $rawInputFile . $prefix . ".drug.all";
     $icagesDrugs = $rawInputFile . $prefix . ".annovar.icagesDrugs.csv";
     if((-e $oncDrugFile) or (-e $supDrugFile) or (-e $otherDrugFile)){
-        !system("cat $matchFile > $allDrugs") or die "ERROR: cannot concatenate drug files\n";
+        !system("touch $otherDrugFile") or die "ERROR: cannot create an empty drug file\n";
     }else{
         !system("touch $allDrugs") or die "ERROR: cannot concatenate drug files\n";
     }
