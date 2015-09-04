@@ -9,7 +9,7 @@ iCAGES is written in Perl and can be run as a standalone application on diverse 
 ## Download
 
 ```
-wget https://github.com/WangGenomicsLab/icages/archive/(version).tar.gz
+wget https://codeload.github.com/WangGenomicsLab/icages/tar.gz/(version)
 ```
 
 ## Installation
@@ -17,7 +17,7 @@ wget https://github.com/WangGenomicsLab/icages/archive/(version).tar.gz
 - Unzip downloaded file
 
 ```
-tar -zxvf (version).tar.gz
+tar -zxvf icages-(version).tar.gz
 ```
 
 - Download and unzip database files
