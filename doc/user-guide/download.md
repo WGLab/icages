@@ -17,7 +17,7 @@ wget https://github.com/WangGenomicsLab/icages/archive/(version).tar.gz
 - Unzip downloaded file
 
 ```
-tar -zxvf v0.1.tar.gz
+tar -zxvf (version).tar.gz
 ```
 
 - Download and unzip database files
