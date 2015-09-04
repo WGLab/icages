@@ -145,8 +145,10 @@ sub loadGenes {
     %kegg = %{$keggRef};
     open(GENE, "$icagesGenesFile") or die;
     $title = <GENE>;
+    # limit the number of maximum genes of 20 
     while(<GENE>){
         chomp;
+	last if $geneCount == 49;
         $geneCount ++;
         my @line = split(",", $_);
         my $geneName = $line[0];
