@@ -9,7 +9,7 @@ use Getopt::Long;
 ######################################################## variable declaration ########################################################
 ######################################################################################################################################
 
-my ($annovarInputFile,$rawInputFile, $inputDir ,$icagesLocation , $tumor ,$germline, $id ,$prefix, $bed, $hg);
+my ($annovarInputFile,$rawInputFile, $inputDir ,$icagesLocation , $tumor ,$germline, $id ,$prefix, $bed, $hg, $expression);
 my $nowString;
 my (%sup, %onc);
 
@@ -25,8 +25,9 @@ $id = $ARGV[5];
 $prefix = $ARGV[6];
 $bed = $ARGV[7];
 $hg = $ARGV[8];
+$expression = $ARGV[9];
 $nowString = localtime();
-$annovarInputFile = &runAnnovar($rawInputFile, $inputDir ,$icagesLocation ,$tumor ,$germline ,$id, $prefix, $bed, $hg );
+$annovarInputFile = &runAnnovar($rawInputFile, $inputDir ,$icagesLocation ,$tumor ,$germline ,$id, $prefix, $bed, $hg , $expression);
 &processAnnovar($annovarInputFile, $hg);
 
 ######################################################################################################################################
@@ -42,6 +43,7 @@ sub runAnnovar {
     my ($log, $annovarLog);
     my $nowString = localtime;                                                                                  #SYSTEM local time
     my $bed;    # location of bed file
+    my $expression; # location of expression log change file
     $rawInputFile = shift;
     $inputDir = shift;
     $icagesLocation = shift;
@@ -51,10 +53,11 @@ sub runAnnovar {
     $prefix = shift;
     $bed = shift;
     $hg = shift;
+    $expression = shift;
     $callAnnotateVariation = $icagesLocation . "bin/annovar/annotate_variation.pl";
     $annovarInputFile = $inputDir . "/" . $prefix . ".annovar";
     $DBLocation = $icagesLocation . "db/";
-    &formatConvert($rawInputFile, $annovarInputFile, $icagesLocation, $tumor, $germline , $id , $bed );
+    &formatConvert($rawInputFile, $annovarInputFile, $icagesLocation, $tumor, $germline , $id , $bed , $expression);
     &divideMutation($annovarInputFile);
     &loadDatabase($DBLocation);
     &annotateMutation($icagesLocation, $annovarInputFile, $hg);
@@ -153,27 +156,29 @@ sub processAnnovar{
         next unless defined $key;
         
         ####### process gene for noncoding variants
-        
+        my $printGene;        
         if($gene =~ /(.*?)\(dist=(.*?)\),(.*?)\(dist=(.*?)\)/){
             my $gene1 = $1;
             my $gene2 = $3;
             my $dist1 = $2;
             my $dist2 = $4;
             if($dist1 <= $dist2){
-                $gene = $gene1;
+                $printGene = $gene1;
             }else{
-                $gene = $gene2;
+                $printGene = $gene2;
             }
         }elsif($gene =~ /(.*)\(.*\),(.*)\(.*\)$/){
-            $gene = $1;
+            $printGene = $1;
         }elsif($gene =~ /(.*)\(.*\);(.*)\(.*\)$/){
-            $gene = $1;
+            $printGene = $1;
         }elsif($gene =~ /(.*?)\(.*\)$/){
-            $gene = $1;
+            $printGene = $1;
         }elsif($gene =~ /;/ or $gene =~ /,/){
             my @gene = split(/;|,/, $gene);
-            $gene = $gene[0];
-        }    
+            $printGene = $gene[0];
+        }else{
+	    $printGene = $gene;
+	}
 
         
         if($line[0] =~ /^exonic/ || $line[0] =~ /^splicing/ ){
@@ -187,9 +192,7 @@ sub processAnnovar{
         }else{
             $otherCount ++;
         }
-        
-
-        
+       
         if ($line[3] == $line[4]){
             if(exists $pointcoding{$key}){
                 $radialSVMCount ++;
@@ -239,11 +242,11 @@ sub processAnnovar{
                 $score = "NA";
             }
         }
-        $icagesMutations{$gene}{$key}{"category"} = $category;
-        $icagesMutations{$gene}{$key}{"mutationSyntax"} = $mutationSyntax;
-        $icagesMutations{$gene}{$key}{"proteinSyntax"} = $proteinSyntax;
-        $icagesMutations{$gene}{$key}{"scoreCategory"} = $scoreCategory;
-        $icagesMutations{$gene}{$key}{"score"} = $score;
+        $icagesMutations{$printGene}{$key}{"category"} = $category;
+        $icagesMutations{$printGene}{$key}{"mutationSyntax"} = $mutationSyntax;
+        $icagesMutations{$printGene}{$key}{"proteinSyntax"} = $proteinSyntax;
+        $icagesMutations{$printGene}{$key}{"scoreCategory"} = $scoreCategory;
+        $icagesMutations{$printGene}{$key}{"score"} = $score;
     }
     print OUT "geneName,chrmosomeNumber,start,end,reference,alternative,category,mutationSyntax,proteinSyntax,scoreCategory,mutationScore\n";
     foreach my $gene (sort keys %icagesMutations){
@@ -274,10 +277,10 @@ sub processAnnovar{
 
 
 sub formatConvert{
-    # $rawInputFile, $annovarInputFile, $icagesLocation, $tumor, $germline , $id, $bed
+    # $rawInputFile, $annovarInputFile, $icagesLocation, $tumor, $germline , $id, $bed, $expression
     print "NOTICE: start input file format checking and converting format if needed\n";
-    my ($rawInputFile, $annovarInputFile);
-    my ( $tumor, $germline , $id, $prefix ); # parameters for vcf conversion
+    my ($rawInputFile, $annovarInputFile, $icagesLocation );
+    my ( $tumor, $germline , $id, $bed, $prefix , $expression); # parameters for vcf conversion
     my  $callConvertToAnnovar;
     my $callvcftools;
     my $formatCheckFirstLine;
@@ -289,6 +292,7 @@ sub formatConvert{
     $germline = shift;
     $id = shift;
     $bed = shift;
+    $expression = shift;
     open(IN, "$rawInputFile") or die "ERROR: cannot open $rawInputFile\n";
     $formatCheckFirstLine = <IN>;
     chomp $formatCheckFirstLine;
@@ -347,10 +351,26 @@ sub formatConvert{
 	    chomp;
 	    push @bed, $_;
 	}
+	close BED;
         for(0..$#bed){
 	    print ANNBED "$bed[$_]\n";
 	}
 	close ANNBED;
+    }
+    if($expression ne "NA"){
+	!system("$callConvertToAnnovar -format bed $expression >  $expression.out") or die "ERROR: cannot convert your BED file input into ANNOVAR input format, please double check your input file\n";
+        open(ANNBED,  ">>", $annovarInputFile) or die "iCAGES: cannot find converted input file for iCAGES in ANNOVAR input format\n";
+        open(EXP, "$expression.out") or die "iCAGES: cannot open ANNOVAR input file generated by your input BED file\n";
+        my @bed;
+        while(<EXP>){
+            chomp;
+            push @bed, $_;
+        }
+	close EXP;
+        for(0..$#bed){
+            print ANNBED "$bed[$_]\n";
+        }
+        close ANNBED;
     }
 }
 
