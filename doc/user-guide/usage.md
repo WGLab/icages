@@ -40,6 +40,8 @@ additional bed file specifying the location of structural variations in the samp
 - --buildver (TEXT)       
 reference genome version, valid options include "hg19", "hg38" and "hg18"
 
+- -e, --expression (TEXT)                
+bed file describing gene expression patterns, the columns are chromosome, start, end, log fold changes
 
 ---
 
