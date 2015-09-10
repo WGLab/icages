@@ -2,14 +2,14 @@
 
 Please join the iCAGES mailing list at google groups [here](https://groups.google.com/forum/?hl=en#!forum/icages) to receive announcements on software updates.
 
-The latest version of iCAGES (2015Feb26) can be downloaded [here](https://github.com/WangGenomicsLab/icages/releases/tag/v0.1.1).
+The latest version of iCAGES (2015Sep04) can be downloaded [here](https://github.com/WangGenomicsLab/icages/releases/tag/v0.1.2).
 
 iCAGES is written in Perl and can be run as a standalone application on diverse hardware systems where standard Perl modules are installed.
 
 ## Download
 
 ```
-wget https://github.com/WangGenomicsLab/icages/archive/(version).tar.gz
+wget https://codeload.github.com/WangGenomicsLab/icages/tar.gz/(version)
 ```
 
 ## Installation
@@ -17,7 +17,7 @@ wget https://github.com/WangGenomicsLab/icages/archive/(version).tar.gz
 - Unzip downloaded file
 
 ```
-tar -zxvf v0.1.tar.gz
+tar -zxvf icages-(version).tar.gz
 ```
 
 - Download and unzip database files
