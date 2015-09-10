@@ -11,6 +11,8 @@ use Getopt::Long;
 
 my ($rawInputFile, $icagesLocation, $prefix);
 my (%biosystem, %neighbors, %activity, %onc, %sup, %icagesGenes);
+# fda and clinical
+my (%fda, %clin, $fdaRef, $clinRef);
 my ($biosystemRef, $activityRef, $oncRef, $supRef, $icagesGenesRef, $neighborsRef);
 
 ######################################################################################################################################
@@ -20,17 +22,19 @@ my ($biosystemRef, $activityRef, $oncRef, $supRef, $icagesGenesRef, $neighborsRe
 $rawInputFile = $ARGV[0];
 $icagesLocation = $ARGV[1];
 $prefix = $ARGV[2];
-($biosystemRef, $activityRef, $oncRef, $supRef) = &loadDatabase($icagesLocation);
+($biosystemRef, $activityRef, $oncRef, $supRef, $fdaRef, $clinRef) = &loadDatabase($icagesLocation);
 %biosystem = %{$biosystemRef};
 %activity = %{$activityRef};
 %onc = %{$oncRef};
 %sup = %{$supRef};
+%fda = %{$fdaRef};
+%clin = %{$clinRef};
 $icagesGenesRef = &getiCAGES($rawInputFile, $prefix);
 %icagesGenes = %{$icagesGenesRef};
 $neighborsRef = &getNeighbors(\%icagesGenes, \%biosystem);
 %neighbors = %{$neighborsRef};
 &getDrugs ($rawInputFile, $icagesLocation, \%neighbors, \%onc, \%sup, $prefix);
-&processDrugs($rawInputFile, \%neighbors, \%activity, $prefix);
+&processDrugs($rawInputFile, \%neighbors, \%activity, $prefix , \%fda, \%clin); # add fda and clin
 
 ######################################################################################################################################
 ############################################################# subroutines ############################################################
@@ -38,18 +42,24 @@ $neighborsRef = &getNeighbors(\%icagesGenes, \%biosystem);
 
 sub loadDatabase {
     print "NOTICE: start loading Databases\n";
-    my (%biosystem, %activity, %onc, %sup);
-    my ($icagesLocation, $DBLocation, $biosystemDB, $activityDB, $oncDB, $supDB);
+    my (%biosystem, %activity, %onc, %sup, %fda, %clin);
+    my ($icagesLocation, $DBLocation, $biosystemDB, $activityDB, $oncDB, $supDB, $fdaDB, $clinicalDB);
     $icagesLocation = shift;
     $DBLocation = $icagesLocation . "db/";
     $biosystemDB = $DBLocation . "biosystem.score";
     $activityDB = $DBLocation . "drug.score";
     $oncDB = $DBLocation . "oncogene.gene";
     $supDB = $DBLocation . "suppressor.gene";
+    # fda and clinical trial, note that only one clinical trial would be provided, for more information, please visit myclinicaltrial.com
+    $fdaDB = $DBLocation . "FDA_cancer.txt";
+    $clinicalDB = $DBLocation . "ClinicalTrial.txt";
     open(BIO, "$biosystemDB") or die "ERROR: cannot open $biosystemDB\n";
     open(ACT, "$activityDB") or die "ERROR: cannot open $activityDB\n";
     open(ONC, "$oncDB") or die "ERROR: cannot open $oncDB\n";
     open(SUP, "$supDB") or die "ERROR: cannot open $supDB\n";
+    # fda and clinical trial
+    open(FDA, "$fdaDB") or die "ERROR: cannot open $fdaDB\n";
+    open(CLIN, "$clinicalDB") or die "ERROR: cannot open $clinicalDB\n";
     while(<BIO>){
         chomp;
         my @line = split("\t", $_);
@@ -70,13 +80,36 @@ sub loadDatabase {
         chomp;
         my @line = split("\t", $_);
         $sup{$line[0]} = 1;
-        
     }
+    while(<FDA>){
+	chomp;
+	my @line = split("\t", $_);
+	# drugname: subtype,active
+	$line[0] = "NA" unless defined $line[0];
+	$line[1] = "NA" unless defined $line[1];
+	$line[2] = "NA" unless defined $line[2];
+ 	my $content = $line[1] . "," . $line[2];
+	$fda{$line[0]} = $content;
+    }
+    while(<CLIN>){
+	chomp;
+	my @line = split("\t", $_);
+	# drugname: trialname,organization,phase,url
+	$line[0] = "NA" unless defined $line[0];
+	$line[1] = "NA"unless defined $line[1];
+	$line[2] = "NA"unless defined $line[2];
+	$line[3] = "NA" unless defined $line[3];
+	$line[4] = "NA" unless defined $line[4];
+ 	my $content = $line[1] . "," . $line[2] . "," . $line[3] . "," . $line[4];
+	$clin{$line[0]} = $content;
+    }
+    close FDA;
+    close CLIN;
     close SUP;
     close ONC;
     close ACT;
     close BIO;
-    return (\%biosystem, \%activity, \%onc, \%sup);
+    return (\%biosystem, \%activity, \%onc, \%sup, \%fda, \%clin);
 }
 
 sub getiCAGES{
@@ -177,10 +210,17 @@ sub processDrugs{
     my (%neighbors, %activity, %icagesDrug, %icagesPrint);
     my ($neighborsRef, $activityRef);
     my ($oncDrugFile, $supDrugFile, $otherDrugFile);
+    # fda and clin
+    my ($fdaRef, $clinRef);
+    my (%fda, %clin);
     $rawInputFile = shift;
     $neighborsRef = shift;
     $activityRef = shift;
     $prefix = shift;
+    $fdaRef = shift;
+    $clinRef = shift;
+    %fda = %{$fdaRef};
+    %clin = %{$clinRef};
     %neighbors = %{$neighborsRef};
     %activity = %{$activityRef};
     $matchFile = $rawInputFile . $prefix . ".*.drug";
@@ -245,11 +285,23 @@ sub processDrugs{
             }
         }
     }
-    print OUT "drugName,finalTarget,directTarget,iCAGESGeneScore,maxBioSystemsScore,maxActivityScore,icagesDrugScore\n";
+    print OUT "drugName,finalTarget,directTarget,iCAGESGeneScore,maxBioSystemsScore,maxActivityScore,icagesDrugScore,FDA_approvedSubtype,FDA_activeIngredient,CLT_name,CLT_organization,CLT_phase,CLT_url\n";
     foreach my $drug (sort {$icagesPrint{$b}{"score"} <=> $icagesPrint{$a}{"score"}} keys %icagesPrint){
         $drugCount ++;
         $gooddrugCount ++ if $icagesPrint{$drug}{"score"} > 0.5;
-        print OUT "$icagesPrint{$drug}{\"content\"}\n";
+	# check fda and clinical trial
+	my $printContent = $icagesPrint{$drug}{"content"};
+	if(exists $fda{$drug}){
+	    $printContent .= "," . $fda{$drug};
+	}else{
+	    $printContent .= ",NA,NA";
+	}
+	if(exists $clin{$drug}){
+	    $printContent .= "," . $clin{$drug};
+	}else{
+	    $printContent .= ",NA,NA,NA,NA";
+	}
+        print OUT "$printContent\n";
     }
     close OUT;
     close DRUG;
