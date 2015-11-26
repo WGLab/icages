@@ -10,10 +10,11 @@ use Getopt::Long;
 ######################################################################################################################################
 
 my ($rawInputFile, $icagesLocation, $prefix);
-my (%biosystem, %neighbors, %activity, %onc, %sup, %icagesGenes);
+my (%biosystem, %neighbors, %activity, %onc, %sup, %icagesGenes, %dgiGenes);
 # fda and clinical
-my (%fda, %clin, $fdaRef, $clinRef);
-my ($biosystemRef, $activityRef, $oncRef, $supRef, $icagesGenesRef, $neighborsRef);
+# fda target
+my (%fda, %clin, %fda_target, $fda_target_ref, $fdaRef, $clinRef);
+my ($biosystemRef, $activityRef, $oncRef, $supRef, $icagesGenesRef, $neighborsRef, $dgiGenesRef);
 
 ######################################################################################################################################
 ########################################################### main  ####################################################################
@@ -22,18 +23,21 @@ my ($biosystemRef, $activityRef, $oncRef, $supRef, $icagesGenesRef, $neighborsRe
 $rawInputFile = $ARGV[0];
 $icagesLocation = $ARGV[1];
 $prefix = $ARGV[2];
-($biosystemRef, $activityRef, $oncRef, $supRef, $fdaRef, $clinRef) = &loadDatabase($icagesLocation);
+# add DGIdb database genes to reduce number of genes to query DGIdb
+($biosystemRef, $activityRef, $oncRef, $supRef, $fdaRef, $clinRef, $fda_target_ref, $dgiGenesRef) = &loadDatabase($icagesLocation);
 %biosystem = %{$biosystemRef};
 %activity = %{$activityRef};
 %onc = %{$oncRef};
 %sup = %{$supRef};
 %fda = %{$fdaRef};
 %clin = %{$clinRef};
+%fda_target = %{$fda_target_ref};
+%dgiGenes = %{$dgiGenesRef};
 $icagesGenesRef = &getiCAGES($rawInputFile, $prefix);
 %icagesGenes = %{$icagesGenesRef};
-$neighborsRef = &getNeighbors(\%icagesGenes, \%biosystem);
+$neighborsRef = &getNeighbors(\%icagesGenes, \%biosystem, \%onc, \%sup);
 %neighbors = %{$neighborsRef};
-&getDrugs ($rawInputFile, $icagesLocation, \%neighbors, \%onc, \%sup, $prefix);
+&getDrugs ($rawInputFile, $icagesLocation, \%neighbors, \%onc, \%sup, $prefix, \%fda_target, \%dgiGenes);
 &processDrugs($rawInputFile, \%neighbors, \%activity, $prefix , \%fda, \%clin); # add fda and clin
 
 ######################################################################################################################################
@@ -42,8 +46,8 @@ $neighborsRef = &getNeighbors(\%icagesGenes, \%biosystem);
 
 sub loadDatabase {
     print "NOTICE: start loading Databases\n";
-    my (%biosystem, %activity, %onc, %sup, %fda, %clin);
-    my ($icagesLocation, $DBLocation, $biosystemDB, $activityDB, $oncDB, $supDB, $fdaDB, $clinicalDB);
+    my (%biosystem, %activity, %onc, %sup, %fda, %clin, %fda_target_ref, %dgiGenes);
+    my ($icagesLocation, $DBLocation, $biosystemDB, $activityDB, $oncDB, $supDB, $fdaDB, $clinicalDB, $dgiGenesDB);
     $icagesLocation = shift;
     $DBLocation = $icagesLocation . "db/";
     $biosystemDB = $DBLocation . "biosystem.score";
@@ -53,6 +57,7 @@ sub loadDatabase {
     # fda and clinical trial, note that only one clinical trial would be provided, for more information, please visit myclinicaltrial.com
     $fdaDB = $DBLocation . "FDA_cancer.txt";
     $clinicalDB = $DBLocation . "ClinicalTrial.txt";
+    $dgiGenesDB = $DBLocation . "DGIdb.genes";
     open(BIO, "$biosystemDB") or die "ERROR: cannot open $biosystemDB\n";
     open(ACT, "$activityDB") or die "ERROR: cannot open $activityDB\n";
     open(ONC, "$oncDB") or die "ERROR: cannot open $oncDB\n";
@@ -60,6 +65,11 @@ sub loadDatabase {
     # fda and clinical trial
     open(FDA, "$fdaDB") or die "ERROR: cannot open $fdaDB\n";
     open(CLIN, "$clinicalDB") or die "ERROR: cannot open $clinicalDB\n";
+    open(DGI, "$dgiGenesDB") or die "ERROR: cannot open $dgiGenesDB\n";
+    while(<DGI>){
+	chomp;
+	$dgiGenes{$_} = 1;
+    }
     while(<BIO>){
         chomp;
         my @line = split("\t", $_);
@@ -74,7 +84,6 @@ sub loadDatabase {
         chomp;
         my @line = split("\t", $_);
         $onc{$line[0]} = 1;
-
     }
     while(<SUP>){
         chomp;
@@ -84,12 +93,16 @@ sub loadDatabase {
     while(<FDA>){
 	chomp;
 	my @line = split("\t", $_);
-	# drugname: subtype,active
+	# drugname: subtype,tradename
 	$line[0] = "NA" unless defined $line[0];
 	$line[1] = "NA" unless defined $line[1];
-	$line[2] = "NA" unless defined $line[2];
- 	my $content = $line[1] . "," . $line[2];
+	$line[3] = "NA" unless defined $line[3];
+ 	my $content = $line[1] . "," . $line[3];
 	$fda{$line[0]} = $content;
+	my @target = split(";", $line[2]);
+	for(0..$#target){
+	    $fda_target{$target[$_]}{$line[0]} = 1;
+	}
     }
     while(<CLIN>){
 	chomp;
@@ -109,7 +122,7 @@ sub loadDatabase {
     close ONC;
     close ACT;
     close BIO;
-    return (\%biosystem, \%activity, \%onc, \%sup, \%fda, \%clin);
+    return (\%biosystem, \%activity, \%onc, \%sup, \%fda, \%clin, \%fda_target, \%dgiGenes);
 }
 
 sub getiCAGES{
@@ -131,20 +144,30 @@ sub getiCAGES{
 
 sub getNeighbors{
     print "NOTICE: start getting top five neighbors for mutated genes\n";
-    my (%icagesGenes, %biosystem, %neighbors);
-    my ($icagesGenesRef, $biosystemRef);
+    my (%icagesGenes, %biosystem, %neighbors, %onc, %sup);
+    my ($icagesGenesRef, $biosystemRef, $oncRef, $supRef);
     my $index;
     $icagesGenesRef = shift;
     $biosystemRef = shift;
+    $oncRef = shift;
+    $supRef = shift;
+    $dgiGenesRef = shift;
     %icagesGenes = %{$icagesGenesRef};
     %biosystem = %{$biosystemRef};
+    %onc = %{$oncRef};
+    %sup = %{$supRef};
+
     foreach my $gene (sort keys %icagesGenes){
         $index = 0;
         $neighbors{$gene}{$gene}{"biosystem"} = 1;
         $neighbors{$gene}{$gene}{"icages"} = $icagesGenes{$gene};
         $neighbors{$gene}{$gene}{"product"} = $icagesGenes{$gene};
         foreach my $neighbor (sort { $biosystem{$b} <=> $biosystem{$a} }  keys %{$biosystem{$gene}}){
-            last if $index == 5;
+#	    if(exists $onc{$gene} or exists $sup{$gene}){
+#		last if $index == 10;
+#	    }else{
+		last if $index == 5;
+#	    }
             $index ++;
             $neighbors{$neighbor}{$gene}{"biosystem"} = $biosystem{$gene}{$neighbor};
             $neighbors{$neighbor}{$gene}{"icages"} = $icagesGenes{$gene};
@@ -160,6 +183,13 @@ sub getDrugs{
     my ($neighborsRef, $oncRef, $supRef);
     my (@seeds, @onc, @sup, @other);
     my ($onc, $sup, $other);
+    $onc="";
+    $sup="";
+    $other="";
+    # fda
+    my $fda_target_ref;
+    my %fda_target;
+
     my ($rawInputFile, $supFile, $oncFile, $otherFile, $icagesLocation, $callDgidb, $prefix);
     $rawInputFile = shift;
     $icagesLocation = shift;
@@ -167,39 +197,70 @@ sub getDrugs{
     $oncRef = shift;
     $supRef = shift;
     $prefix = shift;
+    $fda_target_ref = shift;
+    # DGIdb genes
+    my $dgiGenesRef = shift;
+    my %dgiGenes;
+    %dgiGenes = %{$dgiGenesRef};
     %neighbors = %{$neighborsRef};
     %onc = %{$oncRef};
     %sup = %{$supRef};
+    %fda_target = %{$fda_target_ref};
     @seeds = keys %neighbors;
     $callDgidb = $icagesLocation . "bin/DGIdb/getDrugList.pl";
     $supFile = $rawInputFile . $prefix . ".suppressor.drug";
     $oncFile = $rawInputFile . $prefix.".oncogene.drug";
     $otherFile = $rawInputFile . $prefix. ".other.drug";
+
+    # find FDA drugs for genes in case DGIdb missed it
+    my %all_genes;
     for(0..$#seeds){
+#        print "$seeds[$_]\n";
         if(exists $sup{$seeds[$_]} and $seeds[$_] =~ /[a-zA-Z0-9]+/){
-            push @sup, $seeds[$_];
+	    if(exists $dgiGenes{$seeds[$_]}){
+		push @sup, $seeds[$_];
+	    }
+	    $all_genes{$seeds[$_]} = 1;
         }elsif(exists $onc{$seeds[$_]} and $seeds[$_] =~ /[a-zA-Z0-9]+/){
-            push @onc, $seeds[$_];
+	    if(exists $dgiGenes{$seeds[$_]}){
+		push @onc, $seeds[$_];
+	    }
+	    $all_genes{$seeds[$_]} = 1;
         }else{
 	    if($seeds[$_] =~ /[a-zA-Z0-9]+/){
-		push @other, $seeds[$_];
+		if(exists $dgiGenes{$seeds[$_]}){
+		    push @other, $seeds[$_];
+		}
+		$all_genes{$seeds[$_]} = 1;
 	    }
         }
     }
     $sup = join(",", @sup);
     $onc = join(",", @onc);
     $other = join(",", @other);
-
-
+   
+    if($sup ne "" ){
+#	print "iCAGES: $callDgidb --genes='$sup' --interaction_type='activator,other/unknown,n/a,inducer,positive allosteric modulator,potentiator,stimulator' --source_trust_levels='Expert curated' --output='$supFile'";
+        !system("$callDgidb --genes='$sup' --interaction_type='activator,other/unknown,n/a,inducer,positive allosteric modulator,potentiator,stimulator' --source_trust_levels='Expert curated' --output='$supFile'") or warn "ERROR: cannot gt drugs\n$callDgidb --genes='$sup' --interaction_type='activator,other/unknown,n/a,inducer,positive allosteric modulator,potentiator,stimulator' --source_trust_levels='Expert curated' --output='$supFile'";
+    }
+    if($onc ne ""){
+#	print "iCAGES: $callDgidb --genes='$onc' --interaction_type='agonist,antisense,competitive,immunotherapy,inhibitory allosteric modulator,inverse agonist,negative modulator,partial agonist,partial antagonist,vaccine,inhibitor,suppressor,antibody,antagonist,blocker,other/unknown,n/a' --source_trust_levels='Expert curated' --output='$oncFile'";
+        !system("$callDgidb --genes='$onc' --interaction_type='agonist,antisense,competitive,immunotherapy,inhibitory allosteric modulator,inverse agonist,negative modulator,partial agonist,partial antagonist,vaccine,inhibitor,suppressor,antibody,antagonist,blocker,other/unknown,n/a' --source_trust_levels='Expert curated' --output='$oncFile'") or warn "ERROR: cannot get drugs\n$callDgidb --genes='$onc' --interaction_type='agonist,antisense,competitive,immunotherapy,inhibitory allosteric modulator,inverse agonist,negative modulator,partial agonist,partial antagonist,vaccine,inhibitor,suppressor,antibody,antagonist,blocker,other/unknown,n/a' --source_trust_levels='Expert curated' --output='$oncFile'\n";
+    }
+    if($other ne ""){
+#	print "$callDgidb --genes='$other' --source_trust_levels='Expert curated' --output='$otherFile'";
+	!system("$callDgidb --genes='$other' --source_trust_levels='Expert curated' --output='$otherFile'") or warn "ERROR: cannot get drugs\n$callDgidb --genes='$other' --source_trust_levels='Expert curated' --output='$otherFile'\n";
+    }
     
-    if($sup ne "" and $#sup > 0){
-        !system("$callDgidb --genes='$sup' --interaction_type='activator,other/unknown,n/a,inducer,stimulator' --source_trust_levels='Expert curated' --output='$supFile'") or warn "ERROR: cannot gt drugs\n";
-    }
-    if($onc ne "" and $#onc >0){
-        !system("$callDgidb --genes='$onc' --interaction_type='inhibitor,suppressor,antibody,antagonist,blocker,other/unknown,n/a' --source_trust_levels='Expert curated' --output='$oncFile'") or warn "ERROR: cannot get drugs\n";
-    }
-    if($other ne "" and $#other >0){
-	!system("$callDgidb --genes='$other' --interaction_type='inhibitor,suppressor,antibody,antagonist,blocker,activator,other/unknown,n/a,inducer,stimulator' --source_trust_levels='Expert curated' --output='$otherFile'") or warn "ERROR: cannot get drugs\n";
+    # create an output file
+    my $fdaDrug = $rawInputFile . $prefix. ".fda.drug";
+    open(FDADRUG, ">$fdaDrug") or die "ERROR: cannot create $fdaDrug for outputing FDA drugs\n";
+    foreach my $gene (sort keys %all_genes){
+	if(exists $fda_target{$gene}){
+	    foreach my $drug (sort keys %{$fda_target{$gene}}){
+		print FDADRUG "$gene\t$drug\n";
+	    }
+	}
     }
 }
 
@@ -213,6 +274,9 @@ sub processDrugs{
     # fda and clin
     my ($fdaRef, $clinRef);
     my (%fda, %clin);
+    # fda drug list
+    my $FDADrugFile;
+
     $rawInputFile = shift;
     $neighborsRef = shift;
     $activityRef = shift;
@@ -227,6 +291,7 @@ sub processDrugs{
     $oncDrugFile = $rawInputFile . $prefix . ".oncogene.drug";
     $supDrugFile = $rawInputFile . $prefix . ".suppressor.drug";
     $otherDrugFile = $rawInputFile . $prefix. ".other.drug";
+    $FDADrugFile = $rawInputFile . $prefix. ".fda.drug";
     $allDrugs = $rawInputFile . $prefix . ".drug.all";
     $icagesDrugs = $rawInputFile . $prefix . ".annovar.icagesDrugs.csv";
     if(! -e $oncDrugFile){
@@ -238,7 +303,10 @@ sub processDrugs{
     if(! -e $otherDrugFile){
 	!system("touch $otherDrugFile") or die "ERROR: cannot create $otherDrugFile\n";
     }
-    !system("cat $oncDrugFile $supDrugFile $otherDrugFile > $allDrugs") or die "ERROR: cannot create an empty drug file\n";
+    if(! -e $FDADrugFile){
+        !system("touch $FDADrugFile") or die "ERROR: cannot create $FDADrugFile\n";
+    }
+    !system("cat $oncDrugFile $supDrugFile $otherDrugFile $FDADrugFile > $allDrugs") or die "ERROR: cannot create an empty drug file\n";
     open(DRUG, "$allDrugs") or die "ERROR: cannot open drug file $allDrugs\n";
     open(OUT, ">$icagesDrugs") or die "ERROR: cannot open $icagesDrugs\n";
     while(<DRUG>){
@@ -253,11 +321,13 @@ sub processDrugs{
                 if($neighbors{$neighbor}{$target}{"product"} > $icagesDrug{$line[1]}{$neighbor}{$target}{"biosystem"} * $icagesDrug{$line[1]}{$neighbor}{$target}{"icages"}){
                     $icagesDrug{$line[1]}{$neighbor}{$target}{"biosystem"} = $neighbors{$neighbor}{$target}{"biosystem"};
                     $icagesDrug{$line[1]}{$neighbor}{$target}{"icages"} = $neighbors{$neighbor}{$target}{"icages"} ;
-                    if(exists $activity{$line[1]}){
+		    if(exists $activity{$line[1]}){
                         $icagesDrug{$line[1]}{$neighbor}{$target}{"activity"} = $activity{$line[1]};
                     }else{
                         $icagesDrug{$line[1]}{$neighbor}{$target}{"activity"} = 0;
                     }
+#		    $icagesDrug{$line[1]}{$neighbor}{$target}{"activity"} = 1 if exists $fda{$line[1]} ;
+#		    $icagesDrug{$line[1]}{$neighbor}{$target}{"activity"} = max(0.5, $icagesDrug{$line[1]}{$neighbor}{$target}{"activity"}) if  exists $clin{$line[1]};
                 }
             }else{
                 $icagesDrug{$line[1]}{$neighbor}{$target}{"biosystem"} = $neighbors{$neighbor}{$target}{"biosystem"};
@@ -267,6 +337,9 @@ sub processDrugs{
                 }else{
                     $icagesDrug{$line[1]}{$neighbor}{$target}{"activity"} = 0;
                 }
+#		$icagesDrug{$line[1]}{$neighbor}{$target}{"activity"} = 1 if exists $fda{$line[1]} ;
+#		$icagesDrug{$line[1]}{$neighbor}{$target}{"activity"} = max(0.5, $icagesDrug{$line[1]}{$neighbor}{$target}{"activity"}) if exists $clin{$line[1]};
+		
             }
             $index ++;
         }
@@ -276,21 +349,34 @@ sub processDrugs{
     my $drugCount = 0;
     my $gooddrugCount = 0;
     foreach my $drug (sort keys %icagesDrug){
-
         foreach my $neighbor (sort keys %{$icagesDrug{$drug}}){
             foreach my $final (sort keys %{$icagesDrug{$drug}{$neighbor}}){
                 my $icagesDrug = $icagesDrug{$drug}{$neighbor}{$final}{"biosystem"} * $icagesDrug{$drug}{$neighbor}{$final}{"icages"} * $icagesDrug{$drug}{$neighbor}{$final}{"activity"};
-                $icagesPrint{$drug}{"score"} = $icagesDrug;
-                $icagesPrint{$drug}{"content"} = "$drug,$final,$neighbor,$icagesDrug{$drug}{$neighbor}{$final}{\"icages\"},$icagesDrug{$drug}{$neighbor}{$final}{\"biosystem\"},$icagesDrug{$drug}{$neighbor}{$final}{\"activity\"},$icagesDrug";
+		my $tier = 3;
+		if(exists $fda{$drug}){
+		    $tier = 1;
+		}elsif(exists $clin{$drug}){
+		    $tier = 2;
+		}
+                $icagesPrint{$tier}{$drug}{"score"} = $icagesDrug;
+
+		if( $icagesDrug{$drug}{$neighbor}{$final}{"activity"} == 0){
+		    $icagesDrug{$drug}{$neighbor}{$final}{"activity"} = "NA";
+		}
+		if($icagesDrug == 0){
+		    $icagesDrug{$drug}{$neighbor}{$final}{"drug"} ="NA";
+		}
+                $icagesPrint{$tier}{$drug}{"content"} = "$drug,$final,$neighbor,$icagesDrug{$drug}{$neighbor}{$final}{\"icages\"},$icagesDrug{$drug}{$neighbor}{$final}{\"biosystem\"},$icagesDrug{$drug}{$neighbor}{$final}{\"activity\"},$icagesDrug,$tier";
             }
         }
     }
-    print OUT "drugName,finalTarget,directTarget,iCAGESGeneScore,maxBioSystemsScore,maxActivityScore,icagesDrugScore,FDA_approvedSubtype,FDA_activeIngredient,CLT_name,CLT_organization,CLT_phase,CLT_url\n";
-    foreach my $drug (sort {$icagesPrint{$b}{"score"} <=> $icagesPrint{$a}{"score"}} keys %icagesPrint){
+    print OUT "drugName,finalTarget,directTarget,iCAGESGeneScore,maxBioSystemsScore,maxActivityScore,icagesDrugScore,tier,FDA_approvedSubtype,FDA_activeIngredient,CLT_name,CLT_organization,CLT_phase,CLT_url\n";
+    foreach my $tier (sort {$a <=> $b} keys %icagesPrint){
+    foreach my $drug (sort {$icagesPrint{$tier}{$b}{"score"} <=> $icagesPrint{$tier}{$a}{"score"}} keys %{$icagesPrint{$tier}}){
         $drugCount ++;
-        $gooddrugCount ++ if $icagesPrint{$drug}{"score"} > 0.5;
+        $gooddrugCount ++ if $icagesPrint{$tier}{$drug}{"score"} > 0.5;
 	# check fda and clinical trial
-	my $printContent = $icagesPrint{$drug}{"content"};
+	my $printContent = $icagesPrint{$tier}{$drug}{"content"};
 	if(exists $fda{$drug}){
 	    $printContent .= "," . $fda{$drug};
 	}else{
@@ -302,6 +388,7 @@ sub processDrugs{
 	    $printContent .= ",NA,NA,NA,NA";
 	}
         print OUT "$printContent\n";
+    }
     }
     close OUT;
     close DRUG;
