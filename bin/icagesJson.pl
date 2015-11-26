@@ -211,16 +211,16 @@ sub loadDrugs {
         my %anonymousHash;
 	if($FDA_tag eq "FALSE" and $CT_tag eq "FALSE"){
 	    %anonymousHash = ("Drug_name" => $drugName, "Final_target_gene" => $finalTarget, "Direct_target_gene" => $directTarget, "BioSystems_probability" => $maxBioSystemsScore, "PubChem_active_probability" => $maxActivityScore, "iCAGES_drug_score" => $icagesDrugScore, "Target_mutation_tag" => "FALSE" , "FDA_tag" => "FALSE", "CT_tag" => "FALSE");
-	}elsif($FDA_tag eq "TRUE"){
+	}elsif($FDA_tag eq "TRUE" and $CT_tag eq "FALSE"){
 	    %fda = ("Status" => $line[7], "Active_ingredient" => $line[8]);
 	    %anonymousHash = ("Drug_name" => $drugName, "Final_target_gene" => $finalTarget, "Direct_target_gene" => $directTarget, "BioSystems_probability" => $maxBioSystemsScore, "PubChem_active_probability" => $maxActivityScore, "iCAGES_drug_score" => $icagesDrugScore, "Target_mutation_tag" => "FALSE" , "FDA_tag" => "TRUE", "CT_tag" => "FALSE", "FDA_Info" => \%fda);
-	}elsif($CT_tag eq "TRUE"){
+	}elsif($CT_tag eq "TRUE" and $FDA_tag eq "FALSE"){
 	    %ct = ("Name" => $line[9], "Organization" => $line[10], "Phase" => $line[11] , "URL" => $line[12]);
-	    %anonymousHash = ("Drug_name" => $drugName, "Final_target_gene" => $finalTarget, "Direct_target_gene" => $directTarget, "BioSystems_probability" => $maxBioSystemsScore, "PubChem_active_probability" => $maxActivityScore, "iCAGES_drug_score" => $icagesDrugScore, "Target_mutation_tag" => "FALSE" , "FDA_tag" => "FALSE", "CT_tag" => "TRUE", "CT_Info"=> \%ct);
+	    %anonymousHash = ("Drug_name" => $drugName, "Final_target_gene" => $finalTarget, "Direct_target_gene" => $directTarget, "BioSystems_probability" => $maxBioSystemsScore, "PubChem_active_probability" => $maxActivityScore, "iCAGES_drug_score" => $icagesDrugScore, "Target_mutation_tag" => "FALSE" , "FDA_tag" => "FALSE", "CT_tag" => "TRUE", "CT_Children"=> [\%ct]);
 	}else{
 	    %fda = ("Status" => $line[7], "Active_ingredient" => $line[8]);
 	    %ct= ("Name" => $line[9], "Organization" => $line[10], "Phase" => $line[11] , "URL" => $line[12]);
-	    %anonymousHash = ("Drug_name" => $drugName, "Final_target_gene" => $finalTarget, "Direct_target_gene" => $directTarget, "BioSystems_probability" => $maxBioSystemsScore, "PubChem_active_probability" => $maxActivityScore, "iCAGES_drug_score" => $icagesDrugScore, "Target_mutation_tag" => "FALSE" , "FDA_tag" => "TRUE", "CT_tag" => "TRUE", "FDA_Info" => \%fda, "CT_Info" => \%ct);
+	    %anonymousHash = ("Drug_name" => $drugName, "Final_target_gene" => $finalTarget, "Direct_target_gene" => $directTarget, "BioSystems_probability" => $maxBioSystemsScore, "PubChem_active_probability" => $maxActivityScore, "iCAGES_drug_score" => $icagesDrugScore, "Target_mutation_tag" => "FALSE" , "FDA_tag" => "TRUE", "CT_tag" => "TRUE", "FDA_Info" => \%fda, "CT_Children" => [\%ct]);
 	}
 	
         push @{$icagesDrugs{$finalTarget}}, \%anonymousHash;

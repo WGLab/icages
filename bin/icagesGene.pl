@@ -104,6 +104,9 @@ sub processMutation{
         }else{
             $cnv =  0;
         };
+
+	next if $cnv==0 and $funseq==0 and $radialSVM==0;
+	
         if (exists $phenolyzer{$gene}){
             $phenolyzer = $phenolyzer{$gene};
         }else{
