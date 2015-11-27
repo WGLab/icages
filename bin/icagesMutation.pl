@@ -28,7 +28,7 @@ $hg = $ARGV[8];
 $expression = $ARGV[9];
 $nowString = localtime();
 $annovarInputFile = &runAnnovar($rawInputFile, $inputDir ,$icagesLocation ,$tumor ,$germline ,$id, $prefix, $bed, $hg , $expression);
-&processAnnovar($annovarInputFile, $hg);
+&processAnnovar($annovarInputFile, $hg, $icagesLocation);
 
 ######################################################################################################################################
 ############################################################# subroutines ############################################################
@@ -65,19 +65,71 @@ sub runAnnovar {
 }
 
 
-
 sub processAnnovar{
     print "NOTICE: start processing output from ANNOVAR\n";
     my $annovarInputFile = shift;
     my $hg = shift;
+    my $icagesLocation = shift;
+    # still have to load onc gene set and suppressor gene set
+    my $oncDB = $icagesLocation . "/db/oncogene.gene";
+    my $supDB = $icagesLocation . "/db/suppressor.gene";
+    my (%onc, %sup);
+    open(ONCDB, "$oncDB") or die "ERROR: cannot open $oncDB\n";
+    open(SUPDB, "$supDB") or die "ERROR: cannot open $supDB\n";
+    while(<ONCDB>){
+	chomp;
+	$onc{$_} =1;
+    }
+    close ONCDB;
+    while(<SUPDB>){
+	chomp;
+	$sup{$_} = 1;
+    }
+    close SUPDB;
     my $annovarVariantFunction = $annovarInputFile . ".variant_function";
+    # create a temp file to store bed file of variant function : chr start end score
+    my $genebed = $annovarInputFile . ".variant_function.bed";
+    open(GENEFORBED, "$annovarVariantFunction") or die "ERROR: cannot open $annovarVariantFunction\n";
+    open(GENEBED, ">$genebed") or die "ERROR: cannot create $genebed file\n";
+    my $lastline = "" ;
+    while(<GENEFORBED>){
+	chomp;
+	my @line = split("\t", $_);
+	my $printout = "$line[2]\t$line[3]\t$line[4]"; 
+	if($printout eq $lastline){
+	    next;
+	}else{
+	    print GENEBED "$line[2]\t$line[3]\t$line[4]\n";
+	}
+	$lastline = $printout;
+    }
+    close GENEBED;
+    close GENEFORBED;
     my $annovarExonVariantFunction = $annovarInputFile . ".exonic_variant_function";
     my $annovarRadialSVM = $annovarInputFile . ".snp." . $hg . "_iCAGES_dropped";
     my $annovarCNV = $annovarInputFile . ".cnv." . $hg . "_cnv";
+    # create a temp file to store bed file of cnv with this format : chr start end score
+    my $cnvbed = $annovarInputFile . ".cnv." . $hg . "_cnv.bed";
+
+    # create a final file to store the final result of bedtools intersect
+    my $cnvfinal = $annovarInputFile . ".cnv.final";
+
     my $annovarFunseq2 = $annovarInputFile . ".snp." . $hg . "_funseq2_dropped";
     my $icagesMutations = $annovarInputFile . ".icagesMutations.csv";
+    # add bedtools 
+    my $bedtools = $icagesLocation . "/bin/bedtools/bin/bedtools";
     open(GENE, "$annovarVariantFunction") or die "ERROR: cannot open file $annovarVariantFunction\n";
     open(EXON, "$annovarExonVariantFunction") or die "ERROR: cannot open file $annovarExonVariantFunction\n";
+    if(!-e $annovarCNV){
+	!system("touch $annovarCNV") or die "ERROR: cannot create file $annovarCNV\n";
+    }
+    if(!-e $annovarRadialSVM){
+	!system("touch $annovarRadialSVM") or die "ERROR: cannot create file $annovarRadialSVM\n";
+    }
+    if(!-e $annovarFunseq2){
+	!system("touch $annovarFunseq2") or die "ERROR: cannot create file $annovarFunseq2\n";
+    }
+
     open(CNV, "$annovarCNV") or die "ERROR: cannot open file $annovarCNV\n";
     open(RADIAL, "$annovarRadialSVM") or die "ERROR: cannot open file $annovarRadialSVM\n";
     open(FUNSEQ, "$annovarFunseq2") or die "ERROR: cannot open file $annovarFunseq2\n";
@@ -114,6 +166,12 @@ sub processAnnovar{
         $key = "$line[2],$line[3],$line[4],$line[5],$line[6]";
         $funseq{$key} = $line[1];
     }
+
+    # cnv cannot be processed using key and value
+    # create a file to temporarily store
+
+    open(CNVBED, ">$cnvbed") or die "ERROR: cannot open $cnvbed for write:\n";
+    
     while(<CNV>){
         chomp;
         my @line;
@@ -123,11 +181,24 @@ sub processAnnovar{
         $score = $line[1];
         $score =~ /Score=(.*);/;
         $score = $1;
-        $key = "$line[2],$line[3],$line[4],$line[5],$line[6]";
-        $cnv{$key} = $score;
+	# chr start end score
+	print CNVBED "$line[2]\t$line[3]\t$line[4]\t$score\n";
+   }
+    close CNVBED;
+    
+
+    # get intersect
+    !system("$bedtools intersect -a $cnvbed -b $genebed -wa > $cnvfinal") or die "ERROR: cannot find intersect using bedtools, please check whether or not you have installed bedtools\n";
+    
+    open(CNVFINAL, "$cnvfinal") or die "ERROR: cannot open $cnvfinal for read:\n";
+    while(<CNVFINAL>){
+	chomp;
+	my @line = split("\t", $_);
+	# note that this key is different for snv
+	my $key = "$line[0],$line[1],$line[2]";             
+	$cnv{$key} = $line[3]; 
     }
-    
-    
+
     while(<EXON>){
         chomp;
         my (@line, @syntax, @content);
@@ -153,32 +224,48 @@ sub processAnnovar{
         $gene = $line[1];
         next unless defined $gene;
         $key = "$line[2],$line[3],$line[4],$line[5],$line[6]";
-        next unless defined $key;
-        
+	# note that structural variation key is different !!! chr,start,end;
+	my $structKey = "$line[2],$line[3],$line[4]";
+        my %cnvScore ; # we also need this hash to store cnv score for each gene 
+	
+	next unless defined $key;
+        next unless defined $structKey;
+	
+
         ####### process gene for noncoding variants
-        my $printGene;        
+        my @printGene;
         if($gene =~ /(.*?)\(dist=(.*?)\),(.*?)\(dist=(.*?)\)/){
             my $gene1 = $1;
             my $gene2 = $3;
             my $dist1 = $2;
             my $dist2 = $4;
-            if($dist1 <= $dist2){
-                $printGene = $gene1;
+	    if($dist1 eq "NONE" and $dist2 eq "NONE"){
+		$printGene[0] = $gene1;
+	    }elsif($dist1 eq "NONE"){
+		$printGene[0] = $gene2;
+	    }elsif($dist2 eq "NONE"){
+		$printGene[0] = $gene1;
+	    }elsif($dist1 <= $dist2){
+                $printGene[0] = $gene1;
             }else{
-                $printGene = $gene2;
+                $printGene[0] = $gene2;
             }
-        }elsif($gene =~ /(.*)\(.*\),(.*)\(.*\)$/){
-            $printGene = $1;
-        }elsif($gene =~ /(.*)\(.*\);(.*)\(.*\)$/){
-            $printGene = $1;
-        }elsif($gene =~ /(.*?)\(.*\)$/){
-            $printGene = $1;
+        }elsif($gene =~ /([A-Z|0-9|-]+?)\(.*\),([A-Z|0-9|-]+?)\(.*\)$/){
+            $printGene[0] = $1;
+            $printGene[1] = $3;
+        }elsif($gene =~ /([A-Z|0-9|-]+?)\(.*\);([A-Z|0-9|-]+?)\(.*\)$/){
+            $printGene[0] = $1;
+            $printGene[1] = $3;
+        }elsif($gene =~ /([A-Z|0-9|-]+?)\(.*\)$/){
+            $printGene[0] = $1;
         }elsif($gene =~ /;/ or $gene =~ /,/){
             my @gene = split(/;|,/, $gene);
-            $printGene = $gene[0];
+            for(0..$#gene){
+                $printGene[$_] = $gene[$_];
+            }
         }else{
-	    $printGene = $gene;
-	}
+            $printGene[0] = $gene;
+        }
 
         
         if($line[0] =~ /^exonic/ || $line[0] =~ /^splicing/ ){
@@ -236,17 +323,27 @@ sub processAnnovar{
                 $proteinSyntax = "NA";
             }
             $scoreCategory = "CNV normalized signal";
-            if(exists $cnv{$key} and exists $sup{$gene}){
-                $score = $cnv{$key}
-            }else{
-                $score = "NA";
-            }
+	    for(0..$#printGene){
+		if(exists $cnv{$structKey} and (exists $onc{$printGene[$_]} or exists $sup{$printGene[$_]})){
+		    $score = $cnv{$structKey};
+		}else{
+		    $score = "NA";
+		}
+		$cnvScore{$printGene[$_]} = $score;
+	    }
         }
-        $icagesMutations{$printGene}{$key}{"category"} = $category;
-        $icagesMutations{$printGene}{$key}{"mutationSyntax"} = $mutationSyntax;
-        $icagesMutations{$printGene}{$key}{"proteinSyntax"} = $proteinSyntax;
-        $icagesMutations{$printGene}{$key}{"scoreCategory"} = $scoreCategory;
-        $icagesMutations{$printGene}{$key}{"score"} = $score;
+	
+        for(0..$#printGene){
+            $icagesMutations{$printGene[$_]}{$key}{"category"} = $category;
+            $icagesMutations{$printGene[$_]}{$key}{"mutationSyntax"} = $mutationSyntax;
+            $icagesMutations{$printGene[$_]}{$key}{"proteinSyntax"} = $proteinSyntax;
+            $icagesMutations{$printGene[$_]}{$key}{"scoreCategory"} = $scoreCategory;
+	    if($category eq "structural variation"){
+		$icagesMutations{$printGene[$_]}{$key}{"score"} = $cnvScore{$printGene[$_]};
+	    }else{
+		$icagesMutations{$printGene[$_]}{$key}{"score"} = $score;
+	    }
+        }
     }
     print OUT "geneName,chrmosomeNumber,start,end,reference,alternative,category,mutationSyntax,proteinSyntax,scoreCategory,mutationScore\n";
     foreach my $gene (sort keys %icagesMutations){
@@ -296,22 +393,29 @@ sub formatConvert{
     open(IN, "$rawInputFile") or die "ERROR: cannot open $rawInputFile\n";
     $formatCheckFirstLine = <IN>;
     chomp $formatCheckFirstLine;
-    my $multipleSampleCheck = 0;
-    while(<IN>){
-	chomp;
-	my $line = $_;
-        my @line = split;
-	if($line[0] =~ /^#CHROM/){
-	    if($#line > 9){
-		$multipleSampleCheck = 1;
+    my $multipleSampleCheck = 0;    
+    if($formatCheckFirstLine =~ /^#/){
+	# check the whole file to see if this is multple sample
+
+	while(<IN>){
+	    chomp;
+	    my $line = $_;
+	    my @line = split;
+	    if($line[0] =~ /^#CHROM/){
+		if($#line > 9){
+		    $multipleSampleCheck = 1;
+		}
+		last;
 	    }
-	    last;
-	}elsif($#line == 2 ){
+	}
+    }else{
+	my @line = split(/\t| /, $formatCheckFirstLine);
+	if($#line == 2 ){
 	    $isbedFormat  = 1;
 	}elsif($#line != 2 and defined  $line[3]  and defined $line[4] ){
-		if($line[3] !~ /[a|t|c|g|A|T|C|G|-]+/ or $line[4] !~ /[a|t|c|g|A|T|C|G|-]+/){
-		    $isbedFormat  = 1;
-		}
+	    if($line[3] !~ /[a|t|c|g|A|T|C|G|-]+/ or $line[4] !~ /[a|t|c|g|A|T|C|G|-]+/){
+		$isbedFormat  = 1;
+	    }
 	}
     }
     close IN;
@@ -337,15 +441,35 @@ sub formatConvert{
     }elsif($isbedFormat){
 	# BED
 	print "iCAGES: your input file is likely to be a bed file and iCAGES is converting it to ANNOVAR input format\n";
-	!system("$callConvertToAnnovar -format bed $rawInputFile >  $annovarInputFile") or die "ERROR: cannot convert your BED file input into ANNOVAR input format, please double check your input file\n";
+#	!system("$callConvertToAnnovar -format bed $rawInputFile >  $annovarInputFile") or die "ERROR: cannot convert your BED file input into ANNOVAR input format, please double check your input file\n";
+	my @cnv;
+	open(INPUTCNV, "$rawInputFile") or die;
+	my $checkFiveFields = 0;
+	while(<INPUTCNV>){
+	    chomp;
+	    push @cnv, $_;
+	    my @line  = split;
+	    $checkFiveFields = 1 if $#line == 4;
+	}
+	close INPUTCNV;
+	open(OUTPUTCNV, ">$annovarInputFile") or die;
+	for(0..$#cnv){
+	    if( $checkFiveFields == 1){
+		print OUTPUTCNV "$cnv[$_]\n";
+	    }else{
+		print OUTPUTCNV "$cnv[$_]\t0\t0\n";
+	    }
+	}
     }else{                    
 	#ANNOVAR
         !system("cp $rawInputFile $annovarInputFile") or die "ERROR: cannot use input file $rawInputFile\n";
     }
     if($bed ne "NA"){
-	!system("$callConvertToAnnovar -format bed $bed >  $bed.out") or die "ERROR: cannot convert your BED file input into ANNOVAR input format, please double check your input file\n";
+# there is a bug in annovar convert2annovar.pl for bed
+#	!system("$callConvertToAnnovar -format bed $bed >  $bed.out") or die "ERROR: cannot convert your BED file input into ANNOVAR input format, please double check your input file\n";
+#	!system('awk \'{print $1 "\t" $2 "\t" $3 "\t0\t0"  }\' $bed >  $bed.out') or die "ERROR: cannot convert your BED file input into ANNOVAR input format\n";
 	open(ANNBED,  ">>", $annovarInputFile) or die "iCAGES: cannot find converted input file for iCAGES in ANNOVAR input format\n";
-	open(BED, "$bed.out") or die "iCAGES: cannot open ANNOVAR input file generated by your input BED file\n";
+	open(BED, "$bed") or die "iCAGES: cannot open ANNOVAR input file generated by your input BED file\n";
 	my @bed;
 	while(<BED>){
 	    chomp;
@@ -353,7 +477,7 @@ sub formatConvert{
 	}
 	close BED;
         for(0..$#bed){
-	    print ANNBED "$bed[$_]\n";
+	    print ANNBED "$bed[$_]\t0\t0\n";
 	}
 	close ANNBED;
     }
@@ -453,20 +577,32 @@ sub annotateMutation{
     my @children_pids;
     $children_pids[0] = fork();
     if($children_pids[0] == 0){
-        print "NOTICE: start to run ANNOVAR region annotation to annotate structural variations or variants associated with LOF changes\n";
-        !system("$callAnnovar -regionanno -build $hg -out $cnvFile -dbtype cnv $cnvFile $DBLocation -scorecolumn 4 --colsWanted 0") or die "ERROR: cannot call structural varation\n";
+        print "NOTICE: start to run ANNOVAR region annotation to annotate structural variations or variants associated with CNV changes\n";
+	if(-s $cnvFile){
+	    !system("$callAnnovar -regionanno -build $hg -out $cnvFile -dbtype cnv $cnvFile $DBLocation -scorecolumn 4 --colsWanted 0") or die "ERROR: cannot call structural varation\n";
+	}else{
+	    print "NOTICE: CNV file has 0 size\n";
+	}
         exit 0;
     }
     $children_pids[1] = fork();
     if($children_pids[1] == 0){
         print "NOTICE: start to run ANNOVAR index function to fetch radial SVM score for each mutation \n";
-        !system("$callAnnovar -filter -out $snpFile -build $hg -dbtype iCAGES $snpFile $DBLocation") or die "ERROR: cannot call icages\n";
-        exit 0;
+        if(-s $snpFile){
+	    !system("$callAnnovar -filter -out $snpFile -build $hg -dbtype iCAGES $snpFile $DBLocation") or die "ERROR: cannot call icages\n";
+        }else{
+	    print "NOTICE: SNV file has 0 size\n";
+	}
+	exit 0;
     }
     $children_pids[2] = fork();
     if($children_pids[2] == 0){
         print "NOTICE: start to run ANNOVAR index function to fetch funseq score for each mutation \n";
-        !system("$callAnnovar -filter -out $snpFile -build $hg -dbtype funseq2 $snpFile $DBLocation") or die "ERROR: cannot call funseq2\n";
+	if(-s $snpFile){
+	    !system("$callAnnovar -filter -out $snpFile -build $hg -dbtype funseq2 $snpFile $DBLocation") or die "ERROR: cannot call funseq2\n";
+	}else{
+	    print "NOTICE: SNV file has 0 size, skip funseq score annotation\n";
+	}
         exit 0;
     }
     $children_pids[3] = fork();
