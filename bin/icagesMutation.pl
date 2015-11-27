@@ -188,7 +188,13 @@ sub processAnnovar{
     
 
     # get intersect
-    !system("$bedtools intersect -a $cnvbed -b $genebed -wa > $cnvfinal") or die "ERROR: cannot find intersect using bedtools, please check whether or not you have installed bedtools\n";
+    if(-z $cnvbed ){
+	print "-x\n";
+	!system("touch $cnvfinal") or die "ERROR: cannot create file $cnvfinal\n";
+    }else{
+	print "not -x\n";
+	!system("$bedtools intersect -a $cnvbed -b $genebed -wa > $cnvfinal") or die "ERROR: cannot find intersect using bedtools, please check whether or not you have installed bedtools\n";
+    }
     
     open(CNVFINAL, "$cnvfinal") or die "ERROR: cannot open $cnvfinal for read:\n";
     while(<CNVFINAL>){

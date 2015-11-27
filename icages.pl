@@ -22,8 +22,8 @@ $icagesJson = $icagesLocation . "bin/icagesJson.pl";
 $inputFile = $ARGV[0];
 !system("perl $icagesMutation $inputFile $inputDir $icagesLocation $tumor $germline $id $prefix $bed $hg19 $expression") or die "ERROR: cannot call icagesMutation module\n";
 !system("perl $icagesGene $inputDir $icagesLocation $subtype $prefix ") or die "ERROR: cannot call icagesGene module\n";
-#!system("perl $icagesDrug $inputDir $icagesLocation $prefix") or die "ERROR: cannot call icagesDrug module\n";
-#!system("perl $icagesJson $inputDir $icagesLocation $prefix") or die "ERROR: cannot call icagesJson module\n";
+!system("perl $icagesDrug $inputDir $icagesLocation $prefix") or die "ERROR: cannot call icagesDrug module\n";
+!system("perl $icagesJson $inputDir $icagesLocation $prefix") or die "ERROR: cannot call icagesJson module\n";
 &moveFiles($inputDir, $prefix, $logDir, $outputDir, $tempDir);
 
 ######################################################################################################################################
