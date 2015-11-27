@@ -2,7 +2,7 @@
 
 Please join the iCAGES mailing list at google groups [here](https://groups.google.com/forum/?hl=en#!forum/icages) to receive announcements on software updates.
 
-The latest version of iCAGES (2015Sep04) can be downloaded [here](https://github.com/WangGenomicsLab/icages/releases/tag/v0.1.2).
+The latest version of iCAGES (2015Nov27) can be downloaded [here](https://github.com/WangGenomicsLab/icages/releases/tag/v1.0.1).
 
 iCAGES is written in Perl and can be run as a standalone application on diverse hardware systems where standard Perl modules are installed.
 
@@ -18,12 +18,13 @@ wget https://codeload.github.com/WangGenomicsLab/icages/tar.gz/(version)
 
 ```
 tar -zxvf icages-(version).tar.gz
+mv icages-(version) icages
 ```
 
 - Download and unzip database files
 
 ```
-cd icages-(version)/
+cd icages/
 wget http://icages.usc.edu/download/icages/db.tar.gz
 tar -zxvf db.tar.gz
 ```
@@ -36,12 +37,12 @@ cpanm HTTP::Request
 cpanm LWP
 ```
 
-- Install the first dependency for iCAGES, ANNOVAR. Please visit [ANNOVAR](http://www.openbioinformatics.org/annovar/annovar_download.html) website and download it. If your current direcotry is icages-0.1, then please move annovar/ directory to ./bin diretory 
+- Install the first dependency for iCAGES, ANNOVAR. Please visit [ANNOVAR](http://www.openbioinformatics.org/annovar/annovar_download.html) website and download it. If your current direcotry is icages, then please move annovar/ directory to ./bin diretory 
 ```
 mv path-to-annovar/annovar/ ./bin/
 ```
 
-- Install the second dependency for iCAGES, DGIdb. If your current directory is icages-0.1, then please create a directory under ./bin directory and name it DGIdb.Please visit [DGIdb](http://dgidb.genome.wustl.edu/) to read about it and download download the corresponding perl script from [here](wget https://raw.github.com/genome/dgi-db/master/files/perl_example.pl) to ./bin/DGIdb directory
+- Install the second dependency for iCAGES, DGIdb. If your current directory is icages, then please create a directory under ./bin directory and name it DGIdb.Please visit [DGIdb](http://dgidb.genome.wustl.edu/) to read about it and download download the corresponding perl script from [here](wget https://raw.github.com/genome/dgi-db/master/files/perl_example.pl) to ./bin/DGIdb directory
 
 ```
 mkdir ./bin/DGIdb
@@ -115,6 +116,8 @@ wget https://github.com/arq5x/bedtools2/archive/v2.25.0.tar.gz
 tar -zxvf bedtools2-2.25.0.tar.gz
 mv bedtools2-2.25.0 bedtools
 rm bedtools2-2.25.0.tar.gz
+cd bedtools
+make
 ```
 
 ## Additional databases
@@ -124,7 +127,7 @@ Initial databases for iCAGES only includes hg19 reference genome for human. In o
 - hg18
 
 ```
-cd icages-(version)/db/
+cd icages/db/
 wget http://icages.usc.edu/download/icages/db_hg18.tar.gz
 tar -zxvf db_hg18.tar.gz
 ```
@@ -132,7 +135,7 @@ tar -zxvf db_hg18.tar.gz
 - hg38
 
 ```
-cd icages-(version)/db/
+cd icages/db/
 wget http://icages.usc.edu/download/icages/db_hg38.tar.gz
 tar -zxvf db_hg18.tar.gz
 ```
