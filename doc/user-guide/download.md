@@ -108,6 +108,15 @@ cd vcftools
 make
 ```
 
+- Install the fourth dependency for iCAGES, bedtools. Asuming you are already in icages-(version)/bin/ directory,
+
+```
+wget https://github.com/arq5x/bedtools2/archive/v2.25.0.tar.gz
+tar -zxvf bedtools2-2.25.0.tar.gz
+mv bedtools2-2.25.0 bedtools
+rm bedtools2-2.25.0.tar.gz
+```
+
 ## Additional databases
 
 Initial databases for iCAGES only includes hg19 reference genome for human. In order to annotate variants with hg18 or hg38 reference genomes, please download these additional databases compiled for these two versions of references.
