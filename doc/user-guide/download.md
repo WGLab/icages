@@ -112,7 +112,7 @@ make
 - Install the fourth dependency for iCAGES, bedtools. Asuming you are already in icages-(version)/bin/ directory,
 
 ```
-wget https://github.com/arq5x/bedtools2/archive/v2.25.0.tar.gz
+wget https://codeload.github.com/arq5x/bedtools2/tar.gz/v2.25.0
 tar -zxvf bedtools2-2.25.0.tar.gz
 mv bedtools2-2.25.0 bedtools
 rm bedtools2-2.25.0.tar.gz
