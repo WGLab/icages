@@ -114,7 +114,7 @@ make
 ```
 wget https://codeload.github.com/arq5x/bedtools2/tar.gz/v2.25.0
 tar -zxvf v2.25.0.tar.gz
-mv v2.25.0 bedtools
+mv bedtools2-2.25.0 bedtools
 rm v2.25.0.tar.gz
 cd bedtools
 make
