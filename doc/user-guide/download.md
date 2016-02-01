@@ -52,6 +52,7 @@ wget https://raw.github.com/genome/dgi-db/master/files/perl_example.pl -O ./bin/
 - Please make some modifications of this get_DrugList.pl file. First, add this following line after "parse_opts();" 
 
 ``` 
+my $output;
 open (OUT, ">$output") or die "iCAGES: cannot open file $output for writing the drugs recommended for cancer driver genes\n";
 ```
 
