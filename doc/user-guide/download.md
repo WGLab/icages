@@ -46,7 +46,7 @@ mv path-to-annovar/annovar/ ./bin/
 
 ```
 mkdir ./bin/DGIdb
-wget https://raw.github.com/genome/dgi-db/master/files/perl_example.pl -O ./bin/DGIdb/get_DrugList.pl
+wget https://raw.github.com/genome/dgi-db/master/files/perl_example.pl -O ./bin/DGIdb/getDrugList.pl
 ```
 
 - Please make some modifications of this get_DrugList.pl file. First, add this following line after "parse_opts();" 
