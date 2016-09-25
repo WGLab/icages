@@ -170,9 +170,10 @@ sub loadGenes {
     }
     my @sortediCAGESGeneScore = sort {$icagesGenes{$b}{"iCAGES_gene_score"} <=> $icagesGenes{$a}{"iCAGES_gene_score"}} keys %icagesGenes;
     my $percentile = int(($#sortediCAGESGeneScore + 1) * 0.20);
-    my $criticalValue = $icagesGenes{$sortediCAGESGeneScore[$percentile-1]}{"iCAGES_gene_score"};
+#    my $criticalValue = $icagesGenes{$sortediCAGESGeneScore[$percentile-1]}{"iCAGES_gene_score"};
+    my $criticalValue = 0.11;
     foreach my $gene (sort keys %icagesGenes){
-        if($icagesGenes{$gene}{"iCAGES_gene_score"} >= $criticalValue){
+        if($icagesGenes{$gene}{"iCAGES_gene_score"} > $criticalValue){
             $icagesGenes{$gene}{"Driver"} = "TRUE";
             $driverCount ++;
         }else{
@@ -205,21 +206,21 @@ sub loadDrugs {
 	my $maxActivityScore = $line[5] eq "NA" ? "NA" : sprintf("%.2f", $line[5]);
 	my $icagesDrugScore = $line[6] eq "NA" ? "NA" : sprintf("%.2f", $line[6]);
 	# add fda(7,8) and clinical trial(9,10,11,12)
-	my $FDA_tag = ( $line[7] eq "NA" and $line[8] eq "NA" ) ? "FALSE" : "TRUE" ;
-	my $CT_tag = ( $line[9] eq "NA" and $line[10] eq "NA" and $line[11] eq "NA" and $line[12] eq "NA" ) ? "FALSE" : "TRUE" ;
+	my $FDA_tag = ( $line[8] eq "NA" and $line[9] eq "NA" ) ? "FALSE" : "TRUE" ;
+	my $CT_tag = ( $line[10] eq "NA" and $line[11] eq "NA" and $line[12] eq "NA" and $line[13] eq "NA" ) ? "FALSE" : "TRUE" ;
 	my (%fda, %ct);
         my %anonymousHash;
 	if($FDA_tag eq "FALSE" and $CT_tag eq "FALSE"){
 	    %anonymousHash = ("Drug_name" => $drugName, "Final_target_gene" => $finalTarget, "Direct_target_gene" => $directTarget, "BioSystems_probability" => $maxBioSystemsScore, "PubChem_active_probability" => $maxActivityScore, "iCAGES_drug_score" => $icagesDrugScore, "Target_mutation_tag" => "FALSE" , "FDA_tag" => "FALSE", "CT_tag" => "FALSE");
 	}elsif($FDA_tag eq "TRUE" and $CT_tag eq "FALSE"){
-	    %fda = ("Status" => $line[7], "Active_ingredient" => $line[8]);
+	    %fda = ("Status" => $line[8], "Active_ingredient" => $line[9]);
 	    %anonymousHash = ("Drug_name" => $drugName, "Final_target_gene" => $finalTarget, "Direct_target_gene" => $directTarget, "BioSystems_probability" => $maxBioSystemsScore, "PubChem_active_probability" => $maxActivityScore, "iCAGES_drug_score" => $icagesDrugScore, "Target_mutation_tag" => "FALSE" , "FDA_tag" => "TRUE", "CT_tag" => "FALSE", "FDA_Info" => \%fda);
 	}elsif($CT_tag eq "TRUE" and $FDA_tag eq "FALSE"){
-	    %ct = ("Name" => $line[9], "Organization" => $line[10], "Phase" => $line[11] , "URL" => $line[12]);
+	    %ct = ("Name" => $line[10], "Organization" => $line[11], "Phase" => $line[12] , "URL" => $line[13]);
 	    %anonymousHash = ("Drug_name" => $drugName, "Final_target_gene" => $finalTarget, "Direct_target_gene" => $directTarget, "BioSystems_probability" => $maxBioSystemsScore, "PubChem_active_probability" => $maxActivityScore, "iCAGES_drug_score" => $icagesDrugScore, "Target_mutation_tag" => "FALSE" , "FDA_tag" => "FALSE", "CT_tag" => "TRUE", "CT_Children"=> [\%ct]);
 	}else{
-	    %fda = ("Status" => $line[7], "Active_ingredient" => $line[8]);
-	    %ct= ("Name" => $line[9], "Organization" => $line[10], "Phase" => $line[11] , "URL" => $line[12]);
+	    %fda = ("Status" => $line[8], "Active_ingredient" => $line[9]);
+	    %ct= ("Name" => $line[10], "Organization" => $line[11], "Phase" => $line[12] , "URL" => $line[13]);
 	    %anonymousHash = ("Drug_name" => $drugName, "Final_target_gene" => $finalTarget, "Direct_target_gene" => $directTarget, "BioSystems_probability" => $maxBioSystemsScore, "PubChem_active_probability" => $maxActivityScore, "iCAGES_drug_score" => $icagesDrugScore, "Target_mutation_tag" => "FALSE" , "FDA_tag" => "TRUE", "CT_tag" => "TRUE", "FDA_Info" => \%fda, "CT_Children" => [\%ct]);
 	}
 	

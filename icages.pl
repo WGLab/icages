@@ -15,20 +15,64 @@ my ($inputFile, $inputDir, $icagesLocation, $tumor, $germline, $id, $subtype , $
 ######################################################################################################################################
 ($inputDir, $icagesLocation, $tumor, $germline, $id, $subtype , $logDir, $outputDir, $tempDir, $prefix, $bed, $hg19, $expression) =  &processArguments();
 &checkReady($icagesLocation);
-$icagesMutation = $icagesLocation. "bin/icagesMutation.pl";
+# use yunfei's new index function
+$icagesMutation = $icagesLocation. "bin/icagesMutationNew.pl";
 $icagesGene = $icagesLocation . "bin/icagesGene.pl";
 $icagesDrug = $icagesLocation . "bin/icagesDrug.pl";
 $icagesJson = $icagesLocation . "bin/icagesJson.pl";
 $inputFile = $ARGV[0];
+&genLogFile($inputFile, $inputDir, $tumor, $germline, $id, $subtype , $logDir, $outputDir, $tempDir, $prefix, $bed, $hg19, $expression);
 !system("perl $icagesMutation $inputFile $inputDir $icagesLocation $tumor $germline $id $prefix $bed $hg19 $expression") or die "ERROR: cannot call icagesMutation module\n";
 !system("perl $icagesGene $inputDir $icagesLocation $subtype $prefix ") or die "ERROR: cannot call icagesGene module\n";
-#!system("perl $icagesDrug $inputDir $icagesLocation $prefix") or die "ERROR: cannot call icagesDrug module\n";
-#!system("perl $icagesJson $inputDir $icagesLocation $prefix") or die "ERROR: cannot call icagesJson module\n";
+!system("perl $icagesDrug $inputDir $icagesLocation $prefix") or die "ERROR: cannot call icagesDrug module\n";
+!system("perl $icagesJson $inputDir $icagesLocation $prefix") or die "ERROR: cannot call icagesJson module\n";
 &moveFiles($inputDir, $prefix, $logDir, $outputDir, $tempDir);
 
 ######################################################################################################################################
 ########################################################## subroutines ###############################################################
 ######################################################################################################################################
+
+sub genLogFile{
+    my ($inputFile, $inputDir, $tumor, $germline, $id, $subtype , $logDir, $outputDir, $tempDir, $prefix, $bed, $hg19, $expression);
+    $inputFile = shift;
+    $inputDir = shift;
+    $tumor = shift;
+    $germline = shift;
+    $id = shift;
+    $subtype = shift;
+    $logDir = shift;
+    $outputDir = shift;
+    $tempDir = shift;
+    $prefix = shift;
+    $bed = shift;
+    $hg19 = shift;
+    $expression = shift;
+
+    my $annovarInputFile = $inputDir . "/" . $prefix . ".annovar";
+    my $logFile = $annovarInputFile . ".icages.log";
+    open(LOG, ">$logFile") or die "ERROR: cannot open log file\n";
+    print LOG "########### iCAGES Parameter Summary ###########\n";
+    print LOG "## basic information\n";
+    print LOG "Input file:\t$inputFile\n";
+    print LOG "Input directory:\t$inputDir\n";
+    print LOG "Temp directory:\t$tempDir\n";
+    print LOG "Output directory:\t$outputDir\n\n";
+    
+    
+    print LOG "## sample information\n";
+    print LOG "Prefix:\t$prefix\n";
+    print LOG "Subtype:\t$subtype\n\n";
+
+    
+    print LOG "## advanced information\n";
+    print LOG "Tumor sample id (if any):\t$tumor\n";
+    print LOG "Germline sample id (if any):\t$germline\n";
+    print LOG "Sample id:\t$id\n";
+    print LOG "BED file (if any):\t$bed\n";
+    print LOG "HG version:\t$hg19\n";
+    print LOG "Expression file:\t$expression\n\n";
+    close LOG;
+}
 
 
 sub moveFiles{
