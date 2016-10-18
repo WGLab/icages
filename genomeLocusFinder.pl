@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use Fcntl qw/SEEK_END SEEK_SET/;
 use Data::Dumper;
-use Time::HiRes qw/gettimeofday tv_interval/;
+#use Time::HiRes qw/gettimeofday tv_interval/;
 
 my $BINSIZE = 10; #bin size for indexing
 my $ENDOFFILE = "END_OF_GENOMELOCUSFINDER_INDEX";
@@ -36,7 +36,7 @@ sub index {
     my $usage = "$0 index <fasta index file> <sorted BED file>\n";
     die $usage unless @_ == 2;
     warn "Start indexing...\n";
-    my $t0 = [gettimeofday];
+#    my $t0 = [gettimeofday];
     my $fai = shift;
     my $in = shift;
     my $out = "$in.$suffix";
@@ -89,7 +89,7 @@ sub index {
     #reset for each new chr
     while (<IN>) {
 	$count_total++;
-	warn "NOTICE: $count_total records processed in ".tv_interval($t0)." seconds\n" if $count_total % 1_000_000 == 0;
+#	warn "NOTICE: $count_total records processed in ".tv_interval($t0)." seconds\n" if $count_total % 1_000_000 == 0;
 	#example database record
 	#0	1	2	3	4	5
 	#1	10001	10001	T	A	0.18521432
@@ -149,13 +149,13 @@ sub index {
     close OUT;
 
     warn "Indexing done. Bin size: $BINSIZE. Assume ASCII Encoding for characters.\n";
-    warn "Processed $count_total records in ".tv_interval($t0)." seconds\n";
+#   warn "Processed $count_total records in ".tv_interval($t0)." seconds\n";
 }
 sub find {
     #retrieve recording overlapping with queries
     my $usage = "$0 find <database> <query file> <database name> <output file>\n";
     die $usage unless @_ == 4;
-    my $t0 = [gettimeofday];
+#    my $t0 = [gettimeofday];
     my $db = shift;
     my $index_file = "$db.$suffix";
     my $query = shift;
@@ -183,7 +183,7 @@ sub find {
 
     while (<QUERY>) {
 	$count_total++;
-	warn "NOTICE: $count_total records processed in ".tv_interval($t0)." seconds\n" if $count_total % 1_000_000 == 0;
+#	warn "NOTICE: $count_total records processed in ".tv_interval($t0)." seconds\n" if $count_total % 1_000_000 == 0;
 #	print "query: $_" ;
 	chomp;
 	my @f = split /\t/;
@@ -229,7 +229,7 @@ sub find {
     close DB;
     close INDEX;
     warn "Querying done. Found $count_match matches in $count_total queries.\n";
-    warn "Processed $count_total records in ".tv_interval($t0)." seconds\n";
+#    warn "Processed $count_total records in ".tv_interval($t0)." seconds\n";
     warn "Average database lookup: ".($count_total_db_lookup/$count_total)."\n";
 }
 sub loadKeyIndex {
