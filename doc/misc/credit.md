@@ -4,5 +4,5 @@ The iCAGES software is originally designed by Coco Dong, under the mentorship of
 
 ## Reference
 
-- [Chengliang Dong, Yunfei Guo, Hui Yang, Zeyu He, Xiaoming Liu, Kai Wang **iCAGES: integrated CAncer GEnome Score for comprehensively prioritizing driver genes in personal cancer genomes**] (http://genomemedicine.biomedcentral.com/articles/10.1186/s13073-016-0390-0). Genome Medicine. 2016. DOI: 10.1186/s13073-016-0390-0
+- Chengliang Dong, Yunfei Guo, Hui Yang, Zeyu He, Xiaoming Liu, Kai Wang [**iCAGES: integrated CAncer GEnome Score for comprehensively prioritizing driver genes in personal cancer genomes**] (http://genomemedicine.biomedcentral.com/articles/10.1186/s13073-016-0390-0). Genome Medicine. 2016. DOI: 10.1186/s13073-016-0390-0
 
