@@ -25,7 +25,7 @@ mv icages-(version) icages
 
 ```
 cd icages/
-wget http://icages.usc.edu/download/icages/db.tar.gz
+wget http://icages.wglab.org/download/icages/db.tar.gz
 tar -zxvf db.tar.gz
 ```
 
@@ -129,7 +129,7 @@ Initial databases for iCAGES only includes hg19 reference genome for human. In o
 
 ```
 cd icages/db/
-wget http://icages.usc.edu/download/icages/db_hg18.tar.gz
+wget http://icages.wglab.org/download/icages/db_hg18.tar.gz
 tar -zxvf db_hg18.tar.gz
 ```
 
@@ -137,7 +137,7 @@ tar -zxvf db_hg18.tar.gz
 
 ```
 cd icages/db/
-wget http://icages.usc.edu/download/icages/db_hg38.tar.gz
+wget http://icages.wglab.org/download/icages/db_hg38.tar.gz
 tar -zxvf db_hg18.tar.gz
 ```
 
