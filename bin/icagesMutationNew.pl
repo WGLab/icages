@@ -222,7 +222,7 @@ sub processAnnovar{
         chomp;
         my (@line, @syntax, @content);
         my ($key, $mut, $pro);
-        @line = split(/\t/, $_);
+        @line = split(/\t+/, $_);
         @syntax = split(",", $line[2]);
         @content = split(":", $syntax[0]);
         $mut = $content[3];
@@ -239,7 +239,7 @@ sub processAnnovar{
         my @line;
         my ($key, $gene);                                                            #hash key used for fetch radial SVM score from %radialSVM: mutation->radialSVM
         my ($category, $mutationSyntax, $proteinSyntax, $scoreCategory, $score);
-        @line = split(/\t/, $_);
+        @line = split(/\t+/, $_);
         $gene = $line[1];
         next unless defined $gene;
         $key = "$line[2],$line[3],$line[4],$line[5],$line[6]";
@@ -568,7 +568,7 @@ sub divideMutation{
 
         my @line = split(/\t| /, $printLine);
 
-        if ($line[1] == $line[2] and $line[3] ne "-" and $line[4] ne "-"){
+        if ($line[3] ne "" and $line[4] ne "" and $line[1] == $line[2] and $line[3] ne "-" and $line[4] ne "-"){
             $snvCount ++;
             print SNP "$printLine\n";
         }else{
