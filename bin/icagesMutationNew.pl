@@ -427,7 +427,21 @@ sub formatConvert{
     }
     close IN;
     $callConvertToAnnovar = $icagesLocation . "bin/annovar/convert2annovar.pl";
+    # maybe the user already have installed annovar
+    if (! -e $callConvertToAnnovar) {
+	$callConvertToAnnovar = "convert2annovar.pl";
+	print("WARNING: there is no ANNOVAR installed in the bin directory, assuming that you have already installed ANNOVAR in your system\n");
+    }
+
+
     $callvcftools = $icagesLocation . "bin/vcftools/bin/vcftools";
+    # maybe the user already have installed vcftools
+    if (! -e $callvcftools ){
+	$callvcftools = "vcftools";
+	print("WARNING: there is no vcftools installed in the bin directory, assuming that you have already installed vcftools in your system\n");
+    }
+
+
     if($formatCheckFirstLine =~ /^##fileformat=VCF/){             #VCF
 	if($multipleSampleCheck and $tumor eq "NA" and $germline eq "NA" and $id eq "NA"){
 	    die "ERROR: your vcf file contains multiple samples please specify a valid sample identifier \n";
@@ -584,6 +598,12 @@ sub annotateMutation{
     $snpFile = $annovarInputFile . ".snp";
     $cnvFile = $annovarInputFile . ".cnv";
     $callAnnovar = $icagesLocation . "bin/annovar/annotate_variation.pl";
+    # sometimes the user 
+    if (! -e $callAnnovar) {
+	$callAnnovar = "annotate_variation.pl";
+	print("WARNING: did not find ANNOVAR in ./bin/ directory, assuming have installed ANNOVAR\n");
+    }
+
     my @children_pids;
     $children_pids[0] = fork();
     if($children_pids[0] == 0){
