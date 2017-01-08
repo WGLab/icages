@@ -224,10 +224,8 @@ VCF has immaure development of annotation on structural variations. In order to 
 10	56089432	.	A	C	.	.	.	GT	1|1	0|0
 ...
 [cocodong@biocluster ~/]$ cat input.bed
-chr12	85865797	85887628
-chr20	15052592	15071191
-chr16	87340388	87349798
-chr2		213000509	213007522
+chr10	89677000	89690000
+chr8	38336000	38353000
 [cocodong@biocluster ~/]$ icages.pl input.vcf -i Sample1 -b input.bed
 ```
 
