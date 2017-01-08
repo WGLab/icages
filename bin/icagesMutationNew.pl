@@ -55,6 +55,12 @@ sub runAnnovar {
     $hg = shift;
     $expression = shift;
     $callAnnotateVariation = $icagesLocation . "bin/annovar/annotate_variation.pl";
+
+    # ANNOVAR have already installed
+    if (! -e $callAnnotateVariation) {
+	$callAnnotateVariation = "annotate_variation.pl";
+	print ("WARNING: cannot find ANNOVAR in ./bin/ direcotry, assuming that you have installed ANNOVAR\n");
+    }
     $annovarInputFile = $inputDir . "/" . $prefix . ".annovar";
     $DBLocation = $icagesLocation . "db/";
 #    $DBLocation = "/ssd/icages-humandb/";
@@ -119,6 +125,12 @@ sub processAnnovar{
     my $icagesMutations = $annovarInputFile . ".icagesMutations.csv";
     # add bedtools 
     my $bedtools = $icagesLocation . "/bin/bedtools/bin/bedtools";
+
+    # bedtools have already installed
+    if (! -e $bedtools) {
+	$bedtools = "bedtools";
+	print ("WARNING: did not find bedtools in ./bin/ directory, assuming you have installed bedtools\n");
+    }
     open(GENE, "$annovarVariantFunction") or die "ERROR: cannot open file $annovarVariantFunction\n";
     open(EXON, "$annovarExonVariantFunction") or die "ERROR: cannot open file $annovarExonVariantFunction\n";
     if(!-e $annovarCNV){
@@ -377,6 +389,7 @@ sub processAnnovar{
     print LOG "point coding variants with radialSVM annotation: $radialSVMCount\n";
     print LOG "point noncoding variants with FunSeq2 annotation: $funseqCount\n";
     print LOG "Indels and SVs with CNV signal annotation: $cnvCount\n\n";
+    close OUT;
 }
 
 
@@ -415,6 +428,7 @@ sub formatConvert{
 		last;
 	    }
 	}
+
     }else{
 	my @line = split(/\t| /, $formatCheckFirstLine);
 	if($#line == 2 ){
@@ -423,6 +437,10 @@ sub formatConvert{
 	    if($line[3] !~ /[a|t|c|g|A|T|C|G|-]+/ or $line[4] !~ /[a|t|c|g|A|T|C|G|-]+/){
 		$isbedFormat  = 1;
 	    }
+	}
+	if ($isbedFormat == 1) {
+	    print "iCAEGS: your file is likely to be a BED format\n";
+
 	}
     }
     close IN;
@@ -469,7 +487,7 @@ sub formatConvert{
 	while(<INPUTCNV>){
 	    chomp;
 	    push @cnv, $_;
-	    my @line  = split;
+	    my @line  = split(/\t| /, $_);
 	    $checkFiveFields = 1 if $#line == 4;
 	}
 	close INPUTCNV;
@@ -481,6 +499,7 @@ sub formatConvert{
 		print OUTPUTCNV "$cnv[$_]\t0\t0\n";
 	    }
 	}
+	close OUTPUTCNV;
     }else{                    
 	#ANNOVAR
         !system("cp $rawInputFile $annovarInputFile") or die "ERROR: cannot use input file $rawInputFile\n";
@@ -527,7 +546,7 @@ sub divideMutation{
     $snpFile = $annovarInputFile . ".snp";
     $cnvFile = $annovarInputFile . ".cnv";
     
-    open(OUT, "$annovarInputFile") or die "iCAGES: cannot open input file $annovarInputFile\n";
+    open(OUT, "<$annovarInputFile") or die "iCAGES: cannot open input file $annovarInputFile\n";
     open(SNP, ">$snpFile") or die "iCAGES: cannot open input file $snpFile\n";
     open(CNV, ">$cnvFile") or die "iCAGES: cannot open input file $cnvFile\n";
     
@@ -537,14 +556,18 @@ sub divideMutation{
     my $variantCount = 0;
     my $snvCount = 0;
     my $cnvCount = 0;
-    
+
     while(<OUT>){
         chomp;
         $variantCount ++;
         my $printLine = $_;
 	# get rid of ^M sign
-	$printLine =~ s/\r//g;
-        my @line = split(/\t/, $_);
+	if ($printLine =~ /\r/){
+	    $printLine =~ s/\r//g;
+	}
+
+        my @line = split(/\t| /, $printLine);
+
         if ($line[1] == $line[2] and $line[3] ne "-" and $line[4] ne "-"){
             $snvCount ++;
             print SNP "$printLine\n";
@@ -553,6 +576,7 @@ sub divideMutation{
             print CNV "$printLine\n";
         }
     }
+
     close OUT;
     close SNP;
     close CNV;
