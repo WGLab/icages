@@ -198,9 +198,14 @@ sub processMutation{
         }
         $icagesGene = 1/(1+exp(-$icagesGene));
         $icagesPrint{$gene}{"score"} = $icagesGene;
-        $icagesPrint{$gene}{"content"} = "$gene,$category,$radialSVM,$funseq,$cnv,$phenolyzer,$icagesGene";
+	# add driver information requested by user
+	my $driver = "No";
+	if ($icagesGene >= 0.11) {
+	    $driver = "Yes";
+	}
+        $icagesPrint{$gene}{"content"} = "$gene,$category,$radialSVM,$funseq,$cnv,$phenolyzer,$icagesGene,$driver";
     };
-    print GENES "geneName,category,radialSVM,funseq,cnv,phenolyzer,icagesGeneScore\n";
+    print GENES "geneName,category,radialSVM,funseq,cnv,phenolyzer,icagesGeneScore,driver\n";
     foreach my $gene (sort {$icagesPrint{$b}{"score"} <=> $icagesPrint{$a}{"score"}} keys %icagesPrint){
         print GENES "$icagesPrint{$gene}{\"content\"}\n";
     }
@@ -218,7 +223,7 @@ sub processMutation{
 
 
 sub loadDatabase {
-    print "NOTICE: start loading CGC, KEGG cancer pathway databases";
+    print "NOTICE: start loading CGC, KEGG cancer pathway databases\n";
     my ($DBLocation, $cgcFile, $keggFile);
     my (%cgc, %kegg);
     $DBLocation = shift;
