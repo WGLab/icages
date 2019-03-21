@@ -25,9 +25,14 @@ mv icages-(version) icages
 
 ```
 cd icages/
-wget http://icages.wglab.org/download/icages/db.tar.gz
+wget http://www.openbioinformatics.org/annovar/download/icages/hg19_db.tar.gz
 tar -zxvf db.tar.gz
 ```
+
+You can also get the file from
+http://www.openbioinformatics.org/annovar/download/icages/hg18_db.tar.gz
+and http://www.openbioinformatics.org/annovar/download/icages/hg38_db.tar.gz depending on the genome build.
+
 
 - Install necessary packages for perl. If you have root access, please use cpanm command to download JSON, HTTP::Request and LWP packages for perl
 
