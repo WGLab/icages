@@ -9,7 +9,7 @@ iCAGES is written in Perl and can be run as a standalone application on diverse 
 ## Download
 
 ```
-wget https://codeload.github.com/WangGenomicsLab/icages/tar.gz/(version)
+wget https://github.com/WGLab/icages/archive/refs/tags/v1.0.2.tar.gz
 ```
 
 ## Installation
@@ -25,13 +25,15 @@ mv icages-(version) icages
 
 ```
 cd icages/
-wget http://www.openbioinformatics.org/annovar/download/icages/hg19_db.tar.gz
+wget http://www.openbioinformatics.org/annovar/download/icages/db.tar.gz
 tar -zxvf db.tar.gz
 ```
 
+The `db.tar.gz` file contains resources for hg19 genome coordinate.
+
 You can also get the file from
 http://www.openbioinformatics.org/annovar/download/icages/hg18_db.tar.gz
-and http://www.openbioinformatics.org/annovar/download/icages/hg38_db.tar.gz depending on the genome build.
+and http://www.openbioinformatics.org/annovar/download/icages/hg38_db.tar.gz depending on the genome build. (Note: due to shortage of storage space, these two files are taken offline; if you need them, please contact the PI to set up a temporary link to download).
 
 
 - Install necessary packages for perl. If you have root access, please use cpanm command to download JSON, HTTP::Request and LWP packages for perl
