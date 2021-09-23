@@ -8,7 +8,7 @@ iCAGES is an efficient software tool to prioritizes personalized cancer driver m
 
 - iCAGES drug scores for all potential drugs targeting any gene mutated in this particular patient.
 
-Please click the menu items to navigate through this website. Check [here](http://icages.wglab.edu) to see the web interface of iCAGES. To recieve program updates, please use the [iCAGES mailing list](https://groups.google.com/forum/?hl=en#!forum/icages). If you have questions, comments and bug reports, please post them in the Disqus comment form in this website (or email me <coco90417@gmail.com> or my mentor Dr. Kai Wang <kaichop@gmail.com> directly). Thank you very much for your help and support!
+Please click the menu items to navigate through this website. The web interface of iCAGES may be previously accessed [here](http://icages.wglab.edu) (the server was shut down by the previous university, so if you want to run the web server, please download it and run yourself from [here](https://github.com/WGLab/icages-server). If you have questions, comments and bug reports, please post them in the Disqus comment form in this website (or email me <coco90417@gmail.com> or my mentor Dr. Kai Wang <kaichop@gmail.com> directly). Thank you very much for your help and support!
 
 ---
 
