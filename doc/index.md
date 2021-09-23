@@ -12,8 +12,8 @@ Please click the menu items to navigate through this website. The web interface 
 
 ---
 
-![new](/img/new.png) 2015Feb26: v1.0.0 initial stable release of iCAGES command line is available now! 
+![new](img/new.png) 2015Feb26: v1.0.0 initial stable release of iCAGES command line is available now! 
 
-![new](/img/new.png) 2015Nov27: v1.0.1 stable release of iCAGES command line is available now! 
+![new](img/new.png) 2015Nov27: v1.0.1 stable release of iCAGES command line is available now! 
 
-![new](/img/new.png) 2017Jan08: v1.0.2 stable release of iCAGES command line is available now! 
+![new](img/new.png) 2017Jan08: v1.0.2 stable release of iCAGES command line is available now! 
