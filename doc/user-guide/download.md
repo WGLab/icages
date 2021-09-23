@@ -130,7 +130,7 @@ make
 
 ## Additional databases
 
-Initial databases for iCAGES only includes hg19 reference genome for human. In order to annotate variants with hg18 or hg38 reference genomes, please download these additional databases compiled for these two versions of references.
+Initial databases for iCAGES only includes hg19 reference genome for human. In order to annotate variants with hg18 or hg38 reference genomes, please download these additional databases compiled for these two versions of references. (Note: due to shortage of storage space, these two files are taken offline; if you need them, please contact the PI to set up a temporary link to download).
 
 - hg18
 
