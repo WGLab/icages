@@ -2,7 +2,7 @@
 
 Please join the iCAGES mailing list at google groups [here](https://groups.google.com/forum/?hl=en#!forum/icages) to receive announcements on software updates.
 
-The latest version of iCAGES (2017Jan08) can be downloaded [here](https://github.com/WangGenomicsLab/icages/releases/tag/v1.0.2).
+The latest version of iCAGES (2017Jan08) can be downloaded [here](https://github.com/WGLab/icages/releases/tag/v1.0.2).
 
 iCAGES is written in Perl and can be run as a standalone application on diverse hardware systems where standard Perl modules are installed.
 
