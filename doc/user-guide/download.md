@@ -136,16 +136,16 @@ Initial databases for iCAGES only includes hg19 reference genome for human. In o
 
 ```
 cd icages/db/
-wget http://icages.wglab.org/download/icages/hg18_db.tar.gz
-tar -zxvf db_hg18.tar.gz
+wget http://www.openbioinformatics.org/annovar/download/icages/hg18_db.tar.gz
+tar -zxvf hg18_db.tar.gz
 ```
 
 - hg38
 
 ```
 cd icages/db/
-wget http://icages.wglab.org/download/icages/hg38_db.tar.gz
-tar -zxvf db_hg18.tar.gz
+wget http://www.openbioinformatics.org/annovar/download/icages/hg38_db.tar.gz
+tar -zxvf hg38_db.tar.gz
 ```
 
 
